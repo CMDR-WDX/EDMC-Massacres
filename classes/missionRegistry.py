@@ -66,8 +66,29 @@ class MissionRegistry:
         target_factions_and_count = {}
         source_factions_with_count_and_reward = {}
 
+        all_counts = []
+        # Do a first pass to get the highest and second-highest values
+        for stack_identifier in missions:
+            stack_sum = 0
+            for mission in missions[stack_identifier]:
+                stack_sum += mission.count
+            all_counts.append(stack_sum)
+
+        all_counts = sorted(list(set(all_counts)), reverse=True)
+        maximum_value = all_counts[0]
+        if len (all_counts) >= 2:
+            second_highest_value = all_counts[1]
+        else:
+            second_highest_value = all_counts[0]
+
         for stack_identifier in missions:
             stack: list[MassacreMission] = missions[stack_identifier]
+
+            if len(stack) == 0:
+                continue
+
+            factionName = stack[0].faction
+
             for mission in stack:
                 if mission.target not in target_factions_and_count:
                     target_factions_and_count[mission.target] = {"count": 0, "missions": []}
@@ -76,14 +97,21 @@ class MissionRegistry:
                 if mission.faction not in source_factions_with_count_and_reward:
                     source_factions_with_count_and_reward[mission.faction] = \
                         {"count": 0, "reward": 0, "missions": [], "reward_shareable": 0}
-                source_factions_with_count_and_reward[mission.faction]["count"] += mission.count
-                source_factions_with_count_and_reward[mission.faction]["reward"] += mission.reward
-                source_factions_with_count_and_reward[mission.faction]["missions"].append(mission)
+                source_factions_with_count_and_reward[factionName]["count"] += mission.count
+                source_factions_with_count_and_reward[factionName]["reward"] += mission.reward
+                source_factions_with_count_and_reward[factionName]["missions"].append(mission)
                 if mission.wing:
-                    source_factions_with_count_and_reward[mission.faction]["reward_shareable"] += mission.reward
+                    source_factions_with_count_and_reward[factionName]["reward_shareable"] += mission.reward
+
+            delta = maximum_value - source_factions_with_count_and_reward[factionName]["count"]
+            if delta == 0:
+                delta = second_highest_value - maximum_value
+            source_factions_with_count_and_reward[factionName]["delta"] = delta
 
         return {
             "missions": missions,
             "targets": target_factions_and_count,
-            "sources": source_factions_with_count_and_reward
+            "sources": source_factions_with_count_and_reward,
+            "max_count": maximum_value,
+            "second_max_count": second_highest_value
         }

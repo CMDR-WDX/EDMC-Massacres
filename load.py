@@ -4,7 +4,8 @@ import os.path
 from logging import Logger
 import tkinter as tk
 from classes.uiHandler import UIHandler
-
+from config import config
+import myNotebook as nb
 
 from typing import Dict, Any, Optional
 
@@ -15,6 +16,11 @@ from classes.missionRegistry import MissionRegistry
 from config import appname
 
 plugin_name = os.path.basename(os.path.dirname(__file__))
+
+setting_show_sum: Optional[tk.BooleanVar] = None
+setting_show_ratio_and_cr_per_kill: Optional[tk.BooleanVar] = None
+setting_show_delta_column: Optional[tk.BooleanVar] = None
+
 
 logger: Logger = logging.getLogger(f'{appname}.{plugin_name}')
 
@@ -38,22 +44,60 @@ selected_cmdr: str = ""
 
 
 def plugin_app(parent: tk.Frame) -> tk.Frame:
-    global ui
-    ui = UIHandler(parent)
-    return ui.frame
+    global ui_handler
+    ui_handler = UIHandler(parent)
+    # Get config values
+    cfg_sum = config.get_bool(f"{plugin_name}.show_sum")
+    cfg_delta = config.get_bool(f"{plugin_name}.show_delta")
+    cfg_ratio = config.get_bool(f"{plugin_name}.show_ratio")
+    ui_handler.push_new_config(cfg_sum, cfg_delta, cfg_ratio)
+    return ui_handler.frame
+
+
+def plugin_prefs(parent: nb.Notebook, cmdr: str, is_beta: bool) -> Optional[tk.Frame]:
+    global setting_show_sum
+    global setting_show_delta_column
+    global setting_show_ratio_and_cr_per_kill
+    setting_show_sum = tk.BooleanVar(value=config.get_bool(f"{plugin_name}.show_sum"))
+    setting_show_delta_column = tk.BooleanVar(value=config.get_bool(f"{plugin_name}.show_delta"))
+    setting_show_ratio_and_cr_per_kill = tk.BooleanVar(value=config.get_bool(f"{plugin_name}.show_ratio"))
+    frame = nb.Frame(parent)
+    nb.Label(frame, text="Massacre Plugin Display Settings").grid()
+    nb.Checkbutton(frame, text="Display Sum Row", variable=setting_show_sum).grid()
+    nb.Checkbutton(frame, text="Display Kill Ratio (*1) and CR per Kill", variable=setting_show_ratio_and_cr_per_kill)\
+        .grid()
+    nb.Checkbutton(frame, text="Display Delta Column (*2)", variable=setting_show_delta_column).grid()
+    nb.Label(frame, text="*1: Calculated as follows: Total Mission Kills / Total required actual kills").grid()
+    nb.Label(frame, text="*2: Show the difference to the maximum stack. If it is the maximum stack, the value will"
+                         "show the difference to the second highest stack. This value will then prefixed with a '-'")\
+        .grid()
+    return frame
+
+
+def prefs_changed(cmdr: str, is_beta: bool) -> None:
+    config.set(f"{plugin_name}.show_sum", setting_show_sum.get())
+    config.set(f"{plugin_name}.show_delta", setting_show_delta_column.get())
+    config.set(f"{plugin_name}.show_ratio", setting_show_ratio_and_cr_per_kill.get())
+    ui_handler.push_new_config(
+        setting_show_sum.get(),
+        setting_show_delta_column.get(),
+        setting_show_ratio_and_cr_per_kill.get()
+    )
+    ui_handler.update(mission_registry.build_stack_data(selected_cmdr))
 
 
 def update_ui_with_new_state():
     newState = mission_registry.build_stack_data(selected_cmdr)
-    ui.update(newState)
+    ui_handler.update(newState)
 
 
 def plugin_start3(plugin_dir: str) -> str:
     global mission_registry
     logger.info(f"Starting up Massacre Plugin. Dir: {plugin_dir}")
-
     allMissionsStillActive = MissionIndexBuilder(logger)
-    mission_registry = MissionRegistry(allMissionsStillActive.get_all(), listener=update_ui_with_new_state)
+    mission_registry = MissionRegistry(
+        allMissionsStillActive.get_all(), listener=update_ui_with_new_state
+    )
     return "massacre"
 
 
