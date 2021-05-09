@@ -4,8 +4,16 @@ from datetime import datetime
 from pathlib import Path
 from logging import Logger
 from typing import Dict, Any
+from config import config
 
-file_location = r"C:\Users\Waldi\Saved Games\Frontier Developments\Elite Dangerous"
+file_location: str
+
+if hasattr(config, 'get_str'):
+    file_location = config.get_str("journaldir")
+else:
+    file_location = config.get("journaldir")
+if file_location is None or file_location == "":
+    file_location = config.default_journal_dir
 
 
 class MissionIndexBuilder:
@@ -13,8 +21,8 @@ class MissionIndexBuilder:
         self.__logger = logger
         datetime_of_two_weeks_ago: datetime = dt.datetime.now() - dt.timedelta(weeks=2)
         events = self.__get_mission_events_of_all_cmdrs_since_timestamp(datetime_of_two_weeks_ago.timestamp())
-        self._active_mission_events: dict[str, dict[int, Any]] = self.__filter_out_events_for_active_missions_only(
-            events)
+        self._active_mission_events: dict[str, dict[int, Any]] = \
+            self.__filter_out_events_for_active_missions_only(events)
         pass
 
     """

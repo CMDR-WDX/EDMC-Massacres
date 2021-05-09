@@ -70,7 +70,7 @@ def journal_entry(
         selected_cmdr = cmdr
         update_ui_with_new_state()
     if entry["event"] == "MissionAccepted" \
-            and "Mission_MassacreWing" in entry["Name"] \
+            and "Massacre" in entry["Name"] \
             and entry["TargetType"] == "$MissionUtil_FactionTag_Pirate;":
         mission = MassacreMission(
             entry["TargetFaction"],

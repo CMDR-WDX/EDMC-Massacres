@@ -3,7 +3,7 @@ from typing import Dict, Any
 
 
 class MissionRegistry:
-    def __init__(self, active_mission_events: dict[str, dict[str, Any]], listener=None):
+    def __init__(self, active_mission_events: dict, listener=None):
         self.__listener = listener
         self.registry = {}
         all_cmdrs = active_mission_events.keys()
