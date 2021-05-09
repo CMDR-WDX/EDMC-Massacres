@@ -22,7 +22,8 @@ class MissionRegistry:
                         mission_event["Wing"]
                     )
                     if mission.get_stackable_identifier() not in self.registry[cmdr].keys():
-                        self.__add_mission(cmdr, mission)
+                        self.registry[cmdr][mission.get_stackable_identifier()] = []
+                    self.__add_mission(cmdr, mission)
 
     def notify_mission_added(self, cmdr: str, mission: MassacreMission):
         if cmdr not in self.registry.keys():
