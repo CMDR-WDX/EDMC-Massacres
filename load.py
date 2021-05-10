@@ -46,10 +46,12 @@ selected_cmdr: str = ""
 def plugin_app(parent: tk.Frame) -> tk.Frame:
     global ui_handler
     ui_handler = UIHandler(parent)
-    # Get config values
+    # Get config values and fill with defaults if not set
+
     cfg_sum = config.get_bool(f"{plugin_name}.show_sum")
     cfg_delta = config.get_bool(f"{plugin_name}.show_delta")
     cfg_ratio = config.get_bool(f"{plugin_name}.show_ratio")
+
     ui_handler.push_new_config(cfg_sum, cfg_delta, cfg_ratio)
     return ui_handler.frame
 
@@ -94,9 +96,9 @@ def update_ui_with_new_state():
 def plugin_start3(plugin_dir: str) -> str:
     global mission_registry
     logger.info(f"Starting up Massacre Plugin. Dir: {plugin_dir}")
-    allMissionsStillActive = MissionIndexBuilder(logger)
+    all_missions_taken_since_2_wks_ago = MissionIndexBuilder(logger)
     mission_registry = MissionRegistry(
-        allMissionsStillActive.get_all(), listener=update_ui_with_new_state
+        all_missions_taken_since_2_wks_ago.get_all(), listener=update_ui_with_new_state
     )
     return "massacre"
 
@@ -113,6 +115,11 @@ def journal_entry(
     if selected_cmdr != cmdr:
         selected_cmdr = cmdr
         update_ui_with_new_state()
+    if entry["event"] == "Missions":
+        active_missions = entry["Active"]
+        active_mission_ids = list(map(lambda x: x["MissionID"], active_missions))
+        mission_registry.initialize(cmdr, active_mission_ids)
+
     if entry["event"] == "MissionAccepted" \
             and "Massacre" in entry["Name"] \
             and entry["TargetType"] == "$MissionUtil_FactionTag_Pirate;":

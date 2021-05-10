@@ -14,3 +14,5 @@ class MassacreMission:
     def get_stackable_identifier(self):
         return f"{self.faction} attacking {self.target} in {self.system}"
 
+    def __str__(self):
+        return self.get_stackable_identifier() + f" for {self.count} kills. Wing={self.wing}"

@@ -8,13 +8,17 @@ class UIHandler:
         self.cfg_sum = True
         self.cfg_delta = False
         self.cfg_ratio = False
-        tk.Label(self.frame, text="Awaiting Initialization...").grid(row=0, column=0)
+        tk.Label(self.frame, text="Awaiting Initialization... If you are already in the game,\n"
+                                  "then go to the main menu and select your game mode again.").grid(row=0, column=0)
         theme.update(self.frame)
 
     def update(self, new_state):
         for child in self.frame.winfo_children():
             child.destroy()
-        if len(new_state["missions"]) == 0:
+        if "missions" not in new_state:
+            tk.Label(self.frame, text="Awaiting Initialization... If you are already in the game,\n"
+                                      "then go to the main menu and select your game mode again.").grid(row=0, column=0)
+        elif len(new_state["missions"]) == 0:
             tk.Label(self.frame, text="Massacre Plugin: No Missions").grid(column=0, row=0)
         else:
             self.__print_header()
