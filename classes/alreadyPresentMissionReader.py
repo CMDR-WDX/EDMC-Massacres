@@ -47,7 +47,7 @@ class MissionIndexBuilder:
         for log_file in list_time_filtered:
             cmdr_from_logs = None
             timestamp_to_event_map = {}
-            with open(log_file, "r") as opened_file:
+            with open(log_file, "r", encoding="utf8") as opened_file:
                 line = opened_file.readline()
                 while line != "":
                     try:

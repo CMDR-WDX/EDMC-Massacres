@@ -3,6 +3,19 @@ from classes.massacremission import MassacreMission
 """
 Stores the current "state" of missions
 """
+arr = []
+
+
+def build_massacre_mission(mission: dict) -> MassacreMission:
+    return MassacreMission(
+        mission["TargetFaction"],
+        mission["KillCount"],
+        mission["Reward"],
+        mission["DestinationSystem"],
+        mission["MissionID"],
+        mission["Faction"],
+        mission["Wing"],
+    )
 
 
 def build_missions_from_events(all_mission_events: dict):
@@ -10,18 +23,9 @@ def build_missions_from_events(all_mission_events: dict):
     for cmdr_name in all_mission_events.keys():
         array_for_cmdr = []
         for new_mission_event in all_mission_events[cmdr_name].values():
-            if "Massacre" in new_mission_event["Name"]:
-                array_for_cmdr.append(
-                    MassacreMission(
-                        new_mission_event["TargetFaction"],
-                        new_mission_event["KillCount"],
-                        new_mission_event["Reward"],
-                        new_mission_event["DestinationSystem"],
-                        new_mission_event["MissionID"],
-                        new_mission_event["Faction"],
-                        new_mission_event["Wing"],
-                    )
-                )
+            if "Massacre" in new_mission_event["Name"] and "OnFoot" not in new_mission_event["Name"]:
+                array_for_cmdr.append(build_massacre_mission(new_mission_event))
+
         return_map[cmdr_name] = array_for_cmdr
     return return_map
 
