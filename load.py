@@ -3,15 +3,15 @@ import logging
 import os.path
 from logging import Logger
 import tkinter as tk
-from classes.uiHandler import UIHandler
+from classes2.uiHandler import UIHandler
 from config import config
 import myNotebook as nb
 
 from typing import Dict, Any, Optional
 
-from classes.alreadyPresentMissionReader import MissionIndexBuilder
-from classes.massacremission import MassacreMission
-from classes.missionRegistry import MissionRegistry
+from classes2.alreadyPresentMissionReader import MissionIndexBuilder
+from classes2.massacremission import MassacreMission
+from classes2.missionRegistry import MissionRegistry
 
 from config import appname
 

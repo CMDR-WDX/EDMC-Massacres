@@ -1,4 +1,4 @@
-from classes.massacremission import MassacreMission
+from classes2.massacremission import MassacreMission
 
 """
 Stores the current "state" of missions
