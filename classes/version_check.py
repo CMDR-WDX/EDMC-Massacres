@@ -43,7 +43,7 @@ def __is_current_version_outdated(current_version: str, callback: Callable[[bool
             response_version_split.append(0)
 
         for i in range(longer_len):
-            if response_delta[i] > current_delta[i]:
+            if response_version_split[i] > current_version_split[i]:
                 is_outdated = True
                 break
 

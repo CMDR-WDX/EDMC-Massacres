@@ -24,7 +24,7 @@ def plugin_start3(path: str) -> str:
 
     if configuration.check_updates:
         logger.info("Starting Update Check in new Thread...")
-        thread = build_worker(lambda x: logger.info(f"Is Version Outdated? {x}"))
+        thread = build_worker(lambda x: ui.notify_version_outdated())
         thread.start()
 
 

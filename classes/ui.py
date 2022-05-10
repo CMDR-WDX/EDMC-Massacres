@@ -217,28 +217,28 @@ def _display_outdated_version(frame: tk.Frame, settings: GridUiSettings, row: in
     sub_frame = tk.Frame(frame)
     sub_frame.grid(row=row, column=0, columnspan=__get_row_width(settings))
     sub_frame.config(pady=10)
-    tk.Label(sub_frame, text="Massacre Plugin is Outdated", fg="yellow").grid(row=0, column=0, columnspan=2)
+    tk.Label(sub_frame, text="Massacre Plugin is Outdated").grid(row=0, column=0, columnspan=2)
     btn_github = tk.Button(sub_frame, text="Go to Download", command=open_download_page)
     btn_dismiss = tk.Button(sub_frame, text="Dismiss", command=ui.notify_version_outdated_dismissed)
 
     for i, item in enumerate([btn_github, btn_dismiss]):
         item.grid(row=1, column=i)
-
+    theme.update(sub_frame)
     return row+1
 
 
 class UI:
     def __init__(self):
         self.__frame: Optional[tk.Frame] = None
-        #self.__frame.bind_all("<<Refresh>>", self.update_ui)
         self.__data: Optional[MassacreMissionData] = None
         self.__settings: GridUiSettings = GridUiSettings(classes.massacre_settings.configuration)
 
-        self.__display_outdated_version = True
+        self.__display_outdated_version = False
 
     def set_frame(self, frame: tk.Frame):
         self.__frame = tk.Frame(frame)
         self.__frame.grid(column=0, columnspan=frame.grid_size()[1], sticky=tk.W)
+        self.__frame.bind("<<Refresh>>", lambda _: self.update_ui())
         self.update_ui()
 
     def notify_about_new_massacre_mission_state(self, data: Optional[MassacreMissionData]):
@@ -277,12 +277,12 @@ class UI:
     # To be called from thread
     def notify_version_outdated(self):
         self.__display_outdated_version = True
+        self.__frame.event_generate("<<Refresh>>")
 
     # To be called from Button
     def notify_version_outdated_dismissed(self):
         self.__display_outdated_version = False
         self.update_ui()
-
 
 
 ui = UI()
