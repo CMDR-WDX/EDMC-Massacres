@@ -3,7 +3,7 @@ import datetime as dt
 from datetime import datetime
 from pathlib import Path
 from config import config
-
+from classes.logger_factory import logger
 
 file_location: str
 
@@ -15,14 +15,15 @@ if file_location is None or file_location == "":
     file_location = config.default_journal_dir
 
 
-def __get_logs_after_timestamp(timestamp: datetime) -> list[Path]:
+def __get_logs_after_timestamp(timestamp: dt.date) -> list[Path]:
     logs_after_timestamp = []
 
     for log_file in Path(file_location).glob("*.log"):
         if not log_file.is_file():
             continue
-        if timestamp < dt.datetime.fromtimestamp(log_file.stat().st_mtime, tz=dt.timezone.utc):
+        if timestamp < dt.datetime.fromtimestamp(log_file.stat().st_mtime, tz=dt.timezone.utc).date():
             logs_after_timestamp.append(log_file)
+    logger.debug(f"Loaded {len(logs_after_timestamp)} Logs for all CMDRs")
     return logs_after_timestamp
 
 
@@ -43,15 +44,14 @@ def __extract_mission_accepted_events_from_log(file_path: Path) -> tuple[str, li
                     cmdr = str(line_as_json["Name"])
                 if line_as_json["event"] == "MissionAccepted":
                     return_list.append(line_as_json)
-            except: IOError
-                # TODO: Err Logging
+            except IOError:
+                logger.warning(f"Failed to open File {file_path}. Skipping...")
             finally:
                 line = current_log_file.readline()
-        # if the Commander Event never occurs, return false
         return cmdr, return_list
 
 
-def get_missions_for_cmdr(cmdr: str, timestamp: datetime) -> dict[str, dict]:
+def get_missions_for_cmdr(cmdr: str, timestamp: dt.date) -> dict[int, dict]:
     """
     Returns all Missions that a CMDR accepted after the provided timestamp
 
@@ -75,7 +75,7 @@ def get_missions_for_cmdr(cmdr: str, timestamp: datetime) -> dict[str, dict]:
             mission_accepted_linearized.extend(events)
 
     # Now create a UUID -> Mission Lookup
-    mission_dict: dict[str,  dict] = {}
+    mission_dict: dict[int,  dict] = {}
 
     for event in mission_accepted_linearized:
         mission_dict[event["MissionID"]] = event
