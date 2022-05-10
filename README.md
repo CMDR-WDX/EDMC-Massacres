@@ -9,7 +9,7 @@ If you are new to Massacre Stacking, you could take a look at [this article](htt
 <p align="center">
     <img src="./readme-src/example_screenshot.png" alt="An example screenshot"/>
     <br>
-    Screenshot of EDMC with the Plugin running. You can see the stacking table.
+    Screenshot of EDMC with the Plugin running.
 </p>
 
 ## Usage
@@ -32,8 +32,8 @@ Below you can see the main table's explanation:
 1. These are the mission givers
 2. This is the sum of kills from all massacre missions handed out by that mission giver
 3. This is how much reward you will get upon completion, in Millions. The Value in brackets indicates how much of that is shareable with a wing.
-4. This is the Delta-Column. It displays the difference to the highest stack. The highest stack shows the difference to the next stack and can be identified by the `-`
-5. The Sum-Row shows show many Kills you need to do in total, and how big the total reward ist.
+4. This is the Delta-Column. It displays the difference to the highest stack. The highest stack shows the difference to the second-highest stack and can be identified by the `-`
+5. The Sum-Row shows show many Kills you need to do in total, and how big the total reward is.
 6. More details showing the stack ratio (see below), rewards normalized per required kill, and the sum of all Mission-Kills.
 
 **Stack-Ratio**: This figure tells you how effective you stack is. It is calculated as follows:  

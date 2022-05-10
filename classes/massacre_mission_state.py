@@ -8,6 +8,10 @@ import classes.mission_repository
 
 
 class MassacreMission:
+    """
+    Class defining a Massacre Mission.
+    This class is used in the UI to generate a data view
+    """
     def __init__(self, target_faction: str, count: int, reward: int, target_system: str, target_type: str,
                  source_faction: str, mission_id: int, wing: bool):
         self._target_faction: str = target_faction
@@ -53,6 +57,9 @@ class MassacreMission:
 
 
 def __build_from_event(event: dict) -> MassacreMission:
+    """
+    Build a Massacre Mission from a MissionAccepted-Event
+    """
     target_faction: str = event["TargetFaction"]
     count: int = event["KillCount"]
     reward: int = event["Reward"]
@@ -70,10 +77,17 @@ _massacre_mission_store: dict[int, MassacreMission] = {}
 
 
 def __is_mission_a_massacre_mission(name: str) -> bool:
+    """This is the filter-Function defining if a Mission is considered a Massacre-Mission"""
     return name.startswith("Mission_Massacre") and "OnFoot" not in name
 
 
 def __handle_new_missions_state(data: dict[int, dict]):
+    """
+    Callback used by the Mission Repository to notify this Module about new Missions. This module
+    will then filter out non-massacre missions.
+
+    :param data: All missions for this Commander (not just Massacre Missions)
+    """
     # Go through all Missions, check if they are Massacre Missions
     logger.info(f"Received a new Missions State with {len(data)} Missions.")
     relevant_mission_events = []

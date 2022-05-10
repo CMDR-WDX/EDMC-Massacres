@@ -37,6 +37,29 @@ def __is_current_version_outdated(current_version: str, callback: Callable[[bool
 
         current_delta = longer_len - len(current_version_split)
         response_delta = longer_len - len(response_version_split)
+        """
+        Example:
+        current:  1.0.0.1
+        response: 0.1.0.1
+        -----------------
+                  ^- current > response -> current is more recent
+        
+        Example2:
+        current:  1.0.1
+        response: 1.0.1
+        ---------------
+                  ^-equal, go to next
+                    ^- equal, go to next
+                      ^- equal, go to next
+                        | - is equal
+                        
+        Example3
+        current:  1.0.0
+        response: 1.0.2
+                  ^- equal, go next
+                    ^- equal, go next
+                      ^- response > current -> current is outdated.
+        """
         while current_delta > 0:
             current_version_split.append(0)
             current_delta -= 1
@@ -58,6 +81,9 @@ def __is_current_version_outdated(current_version: str, callback: Callable[[bool
 
 
 def __get_current_version_string():
+    """
+    Gets the current version, located in the version-File
+    """
     version_file = Path(__file__).parent.with_name("version")
     with version_file.open("r", encoding="utf8") as file:
         current_version = str(file.read())
@@ -65,11 +91,17 @@ def __get_current_version_string():
 
 
 def __worker(cb: Callable[[bool], None]):
+    """
+    Function invoked by the new Thread used to check if the Version is outdated.
+    """
     current_version = __get_current_version_string()
     __is_current_version_outdated(current_version, cb)
 
 
 def build_worker(cb: Callable[[bool], None]) -> threading.Thread:
+    """
+    Creates a new Thread used to check version. Does not start the thread.
+    """
     thread = threading.Thread(target=__worker, args=[cb])
     thread.name = "Massacre Version Check"
     thread.daemon = True
@@ -78,6 +110,9 @@ def build_worker(cb: Callable[[bool], None]) -> threading.Thread:
 
 
 def open_download_page():
+    """
+    Opens link to the Download URL in Browser
+    """
     platform = sys.platform
 
     if platform == "darwin":

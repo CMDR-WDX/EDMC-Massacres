@@ -35,7 +35,7 @@ def plugin_start3(_path: str) -> str:
     else:
         logger.info("Skipping Update Check. Disabled in Settings")
 
-    # Rebuilding Mission Index
+    # Building Mission Index
     import datetime as dt
     mission_uuid_to_mission_lookup = \
         classes.mission_aggregation_helper.get_missions_for_all_cmdrs(dt.date.today() - dt.timedelta(weeks=2))
@@ -47,10 +47,8 @@ def plugin_start3(_path: str) -> str:
     return "massacre"
 
 
-
 def journal_entry(cmdr: str, _is_beta: bool, _system: str,
                   _station: str, entry: dict[str, any], _state: dict[str, any]):
-
     if entry["event"] == "Missions":
         # Fetch the currently active missions and pass them to the Mission Registry
         active_mission_uuids = map(lambda x: int(x["MissionID"]), entry["Active"])

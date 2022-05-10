@@ -13,9 +13,11 @@ from ttkHyperlinkLabel import HyperlinkLabel
 import myNotebook as nb
 
 
-
 class Configuration:
-    
+    """
+    Abstraction around the config store
+    """
+
     #######################################
     @property
     def check_updates(self):
@@ -85,14 +87,22 @@ configuration = Configuration()
 
 
 __setting_changes: dict[str, tk.Variable] = {}
+"""
+Changes made in the Prefs-UI are stored here. If EDMC notifies the plugin that changes have been applied values from
+this dict are then applied to the config.
+"""
 
 
 def push_new_changes():
+    """Callback to be used when the user has closed the Settings. This applies changes to the Config."""
     configuration.notify_about_changes(__setting_changes)
     __setting_changes.clear()
 
 
 def build_settings_ui(root: nb.Notebook) -> tk.Frame:
+    """
+    Builds the UI for the Prefs-Tab for this Plugin.
+    """
     checkbox_offset = 10
     title_offset = 20
 
