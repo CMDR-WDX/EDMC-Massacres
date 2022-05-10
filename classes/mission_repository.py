@@ -52,8 +52,10 @@ class MissionRepository:
         active missions define the intersection between the provided uuids and all missions
         """
 
+        emit_event = False
         if self._state == MissionRepoState.AWAITING_INIT:
             self._state = MissionRepoState.INITIALIZED
+            emit_event = True  # This will emit an Event even if no change happened. Occurs when first loading.
         else:
             logger.warning("Mission UUIDs were passed even though the State is already initialized")
             pass
@@ -70,8 +72,9 @@ class MissionRepository:
         # Afterwards, compare UUIDs. If changes were made, emit an Event
         new_active_mission_uuids = sorted(list(self._active_missions))
 
-        emit_event = False
-        if len(old_active_mission_uuids) != len(new_active_mission_uuids):
+        if emit_event:
+            pass  # already determined that event should be emitted.
+        elif len(old_active_mission_uuids) != len(new_active_mission_uuids):
             emit_event = True
         else:
             # make sure both UUID Lists are identical. UUIDs have been sorted prior

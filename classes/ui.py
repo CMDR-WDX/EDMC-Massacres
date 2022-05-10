@@ -226,6 +226,10 @@ def _display_outdated_version(frame: tk.Frame, settings: GridUiSettings, row: in
     return row+1
 
 
+def _display_waiting_for_missions(frame: tk.Frame):
+    tk.Label(frame, text="Massacre Plugin is ready.").grid()
+    return 1
+
 class UI:
     def __init__(self):
         self.__frame: Optional[tk.Frame] = None
@@ -266,8 +270,7 @@ class UI:
         if self.__data is None:
             row_pointer = _display_no_data_info(self.__frame)
         elif self.__data.target_sum == 0:
-            # Do nothing. Just hide
-            pass
+            row_pointer = _display_waiting_for_missions(self.__frame)
         else:
             row_pointer = _display_data(self.__frame, self.__data, self.__settings)
 
