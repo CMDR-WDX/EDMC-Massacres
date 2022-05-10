@@ -39,8 +39,10 @@ def __is_current_version_outdated(current_version: str, callback: Callable[[bool
         response_delta = longer_len - len(response_version_split)
         while current_delta > 0:
             current_version_split.append(0)
+            current_delta -= 1
         while response_delta > 0:
             response_version_split.append(0)
+            response_delta -= 1
 
         for i in range(longer_len):
             if response_version_split[i] > current_version_split[i]:
