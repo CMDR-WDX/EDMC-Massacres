@@ -7,7 +7,9 @@ The plugin displays a table showing how many kills are required per Faction.
 If you are new to Massacre Stacking, you could take a look at [this article](https://sites.google.com/view/ed-pve-combat/making-money).
 
 <p align="center">
-  <img src="./readme-src/example_screenshot.png" alt="An example screenshot"/>
+    <img src="./readme-src/example_screenshot.png" alt="An example screenshot"/>
+    <br>
+    Screenshot of EDMC with the Plugin running. You can see the stacking table.
 </p>
 
 ## Usage
