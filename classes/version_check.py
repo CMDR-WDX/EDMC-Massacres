@@ -11,7 +11,7 @@ from classes.logger_factory import logger
 from pathlib import Path
 from typing import Callable
 
-_version_url = "https://raw.githubusercontent.com/CMDR-WDX/EDMC-Massacres/version-2/version" # TODO: Change when testing is done
+_version_url = "https://raw.githubusercontent.com/CMDR-WDX/EDMC-Massacres/master/version"
 _download_url = "https://github.com/CMDR-WDX/EDMC-Massacres/releases"
 
 
