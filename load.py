@@ -20,7 +20,7 @@ def plugin_app(parent: tkinter.Frame) -> tkinter.Frame:
     return parent
 
 
-def plugin_start3(path: str) -> str:
+def plugin_start3(_path: str) -> str:
     logger.info("Stating Massacre Plugin")
 
     if configuration.check_updates:
@@ -32,38 +32,35 @@ def plugin_start3(path: str) -> str:
 
         thread = build_worker(notify_ui_on_outdated)
         thread.start()
+    else:
+        logger.info("Skipping Update Check. Disabled in Settings")
 
+    # Rebuilding Mission Index
+    import datetime as dt
+    mission_uuid_to_mission_lookup = \
+        classes.mission_aggregation_helper.get_missions_for_all_cmdrs(dt.date.today() - dt.timedelta(weeks=2))
+    logger.info(f"Found Missions for {len(mission_uuid_to_mission_lookup)} CMDRs (completed, finished, failed, etc)")
+    from classes.mission_repository import set_new_repo
+    set_new_repo(mission_uuid_to_mission_lookup)
 
     logger.info("Awaiting CMDR Name to start building Mission Index")
     return "massacre"
 
 
-def dashboard_entry(cmdr: str, is_beta: bool, entry: dict[str, any]):
-    global selected_cmdr
-    if selected_cmdr != cmdr:
-        selected_cmdr = cmdr
-        logger.info(f"New CMDR \"{cmdr}\" found. Rebuilding Mission Index")
-        # Rebuilding Mission Index
-        import datetime as dt
-        mission_uuid_to_mission_lookup = \
-            classes.mission_aggregation_helper.get_missions_for_cmdr(cmdr, dt.date.today() - dt.timedelta(weeks=2))
-        logger.info(f"Found {len(mission_uuid_to_mission_lookup)} Missions (completed, finished, failed, etc)")
-        from classes.mission_repository import set_new_repo
-        set_new_repo(cmdr, mission_uuid_to_mission_lookup)
 
-
-def journal_entry(cmdr: str, is_beta: bool, system: str, station: str, entry: dict[str, any], state: dict[str, any]):
+def journal_entry(cmdr: str, _is_beta: bool, _system: str,
+                  _station: str, entry: dict[str, any], _state: dict[str, any]):
 
     if entry["event"] == "Missions":
         # Fetch the currently active missions and pass them to the Mission Registry
         active_mission_uuids = map(lambda x: int(x["MissionID"]), entry["Active"])
         from classes.mission_repository import set_active_uuids
-        set_active_uuids(list(active_mission_uuids))
+        set_active_uuids(list(active_mission_uuids), cmdr)
 
     elif entry["event"] == "MissionAccepted":
         # A new mission has been accepted. The Mission Repository should be notified about this
         from classes.mission_repository import mission_repository
-        mission_repository.notify_about_new_mission_accepted(entry)
+        mission_repository.notify_about_new_mission_accepted(entry, cmdr)
 
     elif entry["event"] in ["MissionAbandoned", "MissionCompleted"]:  # TODO: What about MissionRedirected?
         # Mission has been completed or failed -> It is no longer active
@@ -72,10 +69,9 @@ def journal_entry(cmdr: str, is_beta: bool, system: str, station: str, entry: di
         mission_repository.notify_about_mission_gone(mission_uuid)
 
 
-def plugin_prefs(parent: any, cmdr: str, is_beta: bool):
+def plugin_prefs(parent: any, _cmdr: str, _is_beta: bool):
     return build_settings_ui(parent)
 
 
-def prefs_changed(cmdr: str, is_beta: bool):
+def prefs_changed(_cmdr: str, _is_beta: bool):
     push_new_changes()
-

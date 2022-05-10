@@ -8,8 +8,10 @@ from classes.logger_factory import logger
 file_location: str
 
 if hasattr(config, 'get_str'):
+    # noinspection SpellCheckingInspection
     file_location = config.get_str("journaldir")
 else:
+    # noinspection SpellCheckingInspection
     file_location = config.get("journaldir")
 if file_location is None or file_location == "":
     file_location = config.default_journal_dir
@@ -51,7 +53,8 @@ def __extract_mission_accepted_events_from_log(file_path: Path) -> tuple[str, li
         return cmdr, return_list
 
 
-def get_missions_for_cmdr(cmdr: str, timestamp: dt.date) -> dict[int, dict]:
+# noinspection SpellCheckingInspection
+def get_missions_for_all_cmdrs(timestamp: dt.date) -> dict[str, dict[int, dict]]:
     """
     Returns all Missions that a CMDR accepted after the provided timestamp
 
@@ -59,25 +62,29 @@ def get_missions_for_cmdr(cmdr: str, timestamp: dt.date) -> dict[int, dict]:
     Said array only contains mission UUIDs. So it is best to filter for UUIDs that are present in the Dict
     returned by this function.
 
-    :param cmdr: The selected CMDR
-    :param timestamp: Only logs created after that timestamp will be considered
-    :return: missions as a dictionary. The Key is the mission UUID
+    :return: Dictionary [CMDR Name, Dictionary[Mission ID, Mission Object]]
     """
 
     # This contains MissionAccepted-events from all CMDRs
     all_mission_logs_after_timestamp_for_all_cmdrs = \
         map(__extract_mission_accepted_events_from_log, __get_logs_after_timestamp(timestamp))
 
+    return_list: dict[str, list[dict]] = {}
+
     # This contains the events in a normal list
-    mission_accepted_linearized: list[dict] = []
     for cmdr_from_event, events in all_mission_logs_after_timestamp_for_all_cmdrs:
-        if cmdr_from_event.lower() == cmdr.lower():
-            mission_accepted_linearized.extend(events)
+        if cmdr_from_event not in return_list.keys():
+            return_list[cmdr_from_event] = []
 
-    # Now create a UUID -> Mission Lookup
-    mission_dict: dict[int,  dict] = {}
+        return_list[cmdr_from_event].extend(events)
 
-    for event in mission_accepted_linearized:
-        mission_dict[event["MissionID"]] = event
+    # Now create a UUID -> Mission Lookup for each CMDR
+    return_array: dict[str, dict[int, dict]] = {}
 
-    return mission_dict
+    for cmdr in return_list.keys():
+        return_array[cmdr] = {}
+        for event in return_list[cmdr]:
+            return_array[cmdr][event["MissionID"]] = event
+
+
+    return return_array

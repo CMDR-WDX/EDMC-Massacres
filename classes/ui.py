@@ -122,6 +122,7 @@ def __display_data_header(frame: tk.Frame, settings: GridUiSettings, row=0):
     ui_elements = [faction_label, kills_label, payout_label]
 
     if settings.delta:
+        # noinspection SpellCheckingInspection
         delta_label = tk.Label(frame, text="Δmax")
         ui_elements.append(delta_label)
 
@@ -156,7 +157,7 @@ def __display_row(frame: tk.Frame, faction: str, data: tuple[int, int, int], max
         element.grid(row=row, column=i, sticky=tk.W)
 
 
-def __display_sum(frame: tk.Frame, data: MassacreMissionData, settings: GridUiSettings, row: int):
+def __display_sum(frame: tk.Frame, data: MassacreMissionData, _settings: GridUiSettings, row: int):
     """
     Display the Sum-Row containing the Reward-Sum and the amount of Kills required.
     """
