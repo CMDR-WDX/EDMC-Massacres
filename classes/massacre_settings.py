@@ -3,10 +3,14 @@ A wrapper around EDMCs Configuration
 """
 import os
 from classes.logger_factory import logger
+from classes.version_check import download_url
 from typing import Callable
 from config import config
 import tkinter as tk
+from tkinter import ttk
+from ttkHyperlinkLabel import HyperlinkLabel
 import myNotebook as nb
+
 
 
 class Configuration:
@@ -88,18 +92,30 @@ def push_new_changes():
 
 
 def build_settings_ui(root: nb.Notebook) -> tk.Frame:
+    checkbox_offset = 10
+    title_offset = 20
+
     frame = nb.Frame(root)
+    frame.columnconfigure(1, weight=1)
     __setting_changes.clear()
     __setting_changes["check_updates"] = tk.IntVar(value=configuration.check_updates)
     __setting_changes["display_delta_column"] = tk.IntVar(value=configuration.display_delta_column)
     __setting_changes["display_sum_row"] = tk.IntVar(value=configuration.display_sum_row)
     __setting_changes["display_ratio_and_cr_per_kill_row"] = tk.IntVar(value=configuration.display_ratio_and_cr_per_kill_row)
 
-    nb.Label(frame, text="UI Settings", pady=10).grid()
-    nb.Checkbutton(frame, text="Display Delta-Column", variable=__setting_changes["display_delta_column"]).grid()
-    nb.Checkbutton(frame, text="Display Sum-Row", variable=__setting_changes["display_sum_row"]).grid()
-    nb.Checkbutton(frame, text="Display Summary-Row", variable=__setting_changes["display_ratio_and_cr_per_kill_row"]).grid()
-    nb.Label(frame, text="Other", pady=10).grid()
-    nb.Checkbutton(frame, text="Check for Updates on Start", variable=__setting_changes["check_updates"]).grid()
+    nb.Label(frame, text="UI Settings", pady=10).grid(sticky=tk.W, padx=title_offset)
+    ui_settings_checkboxes = [
+        nb.Checkbutton(frame, text="Display Delta-Column", variable=__setting_changes["display_delta_column"]),
+        nb.Checkbutton(frame, text="Display Sum-Row", variable=__setting_changes["display_sum_row"]),
+        nb.Checkbutton(frame, text="Display Summary-Row", variable=__setting_changes["display_ratio_and_cr_per_kill_row"])
+    ]
+    for i, entry in enumerate(ui_settings_checkboxes):
+        entry.grid(columnspan=2, padx=checkbox_offset, sticky=tk.W)
+
+    nb.Label(frame, text="Other", pady=10, padx=title_offset).grid(sticky=tk.W)
+    nb.Checkbutton(frame, text="Check for Updates on Start", variable=__setting_changes["check_updates"]).grid(columnspan=2, sticky=tk.W, padx=checkbox_offset)
+    nb.Label(frame, text="", pady=10).grid()
+    nb.Label(frame, text="Made by CMDR WDX").grid(sticky=tk.W, padx=checkbox_offset)
+    HyperlinkLabel(frame, text="Github", background=nb.Label().cget("background"), url=download_url, underline=True).grid(columnspan=2, sticky=tk.W, padx=checkbox_offset)
 
     return frame

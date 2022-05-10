@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Callable
 
 _version_url = "https://raw.githubusercontent.com/CMDR-WDX/EDMC-Massacres/master/version"
-_download_url = "https://github.com/CMDR-WDX/EDMC-Massacres/releases"
+download_url = "https://github.com/CMDR-WDX/EDMC-Massacres/releases"
 
 
 def __is_current_version_outdated(current_version: str, callback: Callable[[bool], None]) -> None:
@@ -79,11 +79,11 @@ def open_download_page():
     platform = sys.platform
 
     if platform == "darwin":
-        subprocess.Popen(["open", _download_url])
+        subprocess.Popen(["open", download_url])
     elif platform == "win32":
-        os.startfile(_download_url)
+        os.startfile(download_url)
     else:
         try:
-            subprocess.Popen(["xdg-open", _download_url])
+            subprocess.Popen(["xdg-open", download_url])
         except OSError:
             logger.error("Failed to open URL")

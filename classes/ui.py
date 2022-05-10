@@ -230,6 +230,7 @@ def _display_waiting_for_missions(frame: tk.Frame):
     tk.Label(frame, text="Massacre Plugin is ready.").grid()
     return 1
 
+
 class UI:
     def __init__(self):
         self.__frame: Optional[tk.Frame] = None
