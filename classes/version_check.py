@@ -46,6 +46,8 @@ def __is_current_version_outdated(current_version: str, callback: Callable[[bool
             if response_version_split[i] > current_version_split[i]:
                 is_outdated = True
                 break
+            if response_version_split[i] < current_version_split[i]:
+                break
 
     except IOError:
         logger.error("Failed to get Version from Remote. Ignoring...")
