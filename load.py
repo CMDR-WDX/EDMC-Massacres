@@ -5,9 +5,10 @@ from typing import Optional
 
 import classes.mission_aggregation_helper
 import classes.massacre_mission_state
+
 from classes.ui import ui
 from classes.logger_factory import logger
-from classes.massacre_settings import configuration
+from classes.massacre_settings import configuration, build_settings_ui, push_new_changes
 from classes.version_check import build_worker
 
 plugin_name = os.path.basename(os.path.dirname(__file__))
@@ -24,7 +25,12 @@ def plugin_start3(path: str) -> str:
 
     if configuration.check_updates:
         logger.info("Starting Update Check in new Thread...")
-        thread = build_worker(lambda x: ui.notify_version_outdated())
+
+        def notify_ui_on_outdated(is_outdated: bool):
+            if is_outdated:
+                ui.notify_version_outdated()
+
+        thread = build_worker(notify_ui_on_outdated)
         thread.start()
 
 
@@ -64,3 +70,12 @@ def journal_entry(cmdr: str, is_beta: bool, system: str, station: str, entry: di
         mission_uuid = entry["MissionID"]
         from classes.mission_repository import mission_repository
         mission_repository.notify_about_mission_gone(mission_uuid)
+
+
+def plugin_prefs(parent: any, cmdr: str, is_beta: bool):
+    return build_settings_ui(parent)
+
+
+def prefs_changed(cmdr: str, is_beta: bool):
+    push_new_changes()
+

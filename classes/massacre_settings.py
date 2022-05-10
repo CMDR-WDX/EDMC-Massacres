@@ -5,6 +5,8 @@ import os
 from classes.logger_factory import logger
 from typing import Callable
 from config import config
+import tkinter as tk
+import myNotebook as nb
 
 
 class Configuration:
@@ -58,5 +60,46 @@ class Configuration:
         self.plugin_name = os.path.basename(os.path.dirname(__file__))
         self.config_changed_listeners: list[Callable[[Configuration], None]] = []
 
+    def notify_about_changes(self, data: dict[str, tk.Variable]):
+        keys = data.keys()
+
+        if "check_updates" in keys:
+            self.check_updates = data["check_updates"].get()
+        if "display_delta_column" in keys:
+            self.display_delta_column = data["display_delta_column"].get()
+        if "display_sum_row" in keys:
+            self.display_sum_row = data["display_sum_row"].get()
+        if "display_ratio_and_cr_per_kill_row" in keys:
+            self.display_ratio_and_cr_per_kill_row = data["display_ratio_and_cr_per_kill_row"].get()
+
+        for listener in self.config_changed_listeners:
+            listener(self)
+        
 
 configuration = Configuration()
+
+
+__setting_changes: dict[str, tk.Variable] = {}
+
+
+def push_new_changes():
+    configuration.notify_about_changes(__setting_changes)
+    __setting_changes.clear()
+
+
+def build_settings_ui(root: nb.Notebook) -> tk.Frame:
+    frame = nb.Frame(root)
+    __setting_changes.clear()
+    __setting_changes["check_updates"] = tk.IntVar(value=configuration.check_updates)
+    __setting_changes["display_delta_column"] = tk.IntVar(value=configuration.display_delta_column)
+    __setting_changes["display_sum_row"] = tk.IntVar(value=configuration.display_sum_row)
+    __setting_changes["display_ratio_and_cr_per_kill_row"] = tk.IntVar(value=configuration.display_ratio_and_cr_per_kill_row)
+
+    nb.Label(frame, text="UI Settings", pady=10).grid()
+    nb.Checkbutton(frame, text="Display Delta-Column", variable=__setting_changes["display_delta_column"]).grid()
+    nb.Checkbutton(frame, text="Display Sum-Row", variable=__setting_changes["display_sum_row"]).grid()
+    nb.Checkbutton(frame, text="Display Summary-Row", variable=__setting_changes["display_ratio_and_cr_per_kill_row"]).grid()
+    nb.Label(frame, text="Other", pady=10).grid()
+    nb.Checkbutton(frame, text="Check for Updates on Start", variable=__setting_changes["check_updates"]).grid()
+
+    return frame

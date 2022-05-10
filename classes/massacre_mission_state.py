@@ -69,12 +69,16 @@ massacre_mission_listeners: list[Callable[[dict[int, MassacreMission]], None]] =
 _massacre_mission_store: dict[int, MassacreMission] = {}
 
 
+def __is_mission_a_massacre_mission(name: str) -> bool:
+    return name.startswith("Mission_Massacre") and "OnFoot" not in name
+
+
 def __handle_new_missions_state(data: dict[int, dict]):
     # Go through all Missions, check if they are Massacre Missions
     logger.info(f"Received a new Missions State with {len(data)} Missions.")
     relevant_mission_events = []
     for mission in data.values():
-        if mission["Name"] in ["Mission_MassacreWing", "Mission_Massacre"]:
+        if __is_mission_a_massacre_mission(mission["Name"]):
             relevant_mission_events.append(mission)
     logger.info(f"{len(relevant_mission_events)} of found Missions are Massacre Missions")
     relevant_missions = map(__build_from_event, relevant_mission_events)

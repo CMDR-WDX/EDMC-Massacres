@@ -121,7 +121,7 @@ def __display_data_header(frame: tk.Frame, settings: GridUiSettings, row=0):
 
     ui_elements = [faction_label, kills_label, payout_label]
 
-    if settings.delta or True:  # TODO:
+    if settings.delta:
         delta_label = tk.Label(frame, text="Δmax")
         ui_elements.append(delta_label)
 
@@ -144,7 +144,7 @@ def __display_row(frame: tk.Frame, faction: str, data: tuple[int, int, int], max
 
     ui_elements = [faction_label, kills_label, payout_label]
 
-    if settings.delta or True:  # TODO:
+    if settings.delta:
         # Calculate difference
         delta = max_count - count
         text = delta if delta > 0 else second_largest_count - max_count
@@ -196,16 +196,15 @@ def _display_data(frame: tk.Frame, data: MassacreMissionData, settings: GridUiSe
                       data.before_stack_height)
         row_pointer += 1
 
-    if settings.sum or True:
+    if settings.sum:
         __display_sum(frame, data, settings, row_pointer)
         row_pointer += 1
 
-    if settings.summary or True:
+    if settings.summary:
         __display_summary(frame, data, settings, row_pointer)
         row_pointer += 1
 
     full_width = __get_row_width(settings)
-    data.warnings.append("Test 21321321213125 54353534543")
     for warning in data.warnings:
         __display_warning(frame, warning, full_width, row_pointer)
         row_pointer += 1
@@ -232,8 +231,12 @@ class UI:
         self.__frame: Optional[tk.Frame] = None
         self.__data: Optional[MassacreMissionData] = None
         self.__settings: GridUiSettings = GridUiSettings(classes.massacre_settings.configuration)
-
+        classes.massacre_settings.configuration.config_changed_listeners.append(self.rebuild_settings)
         self.__display_outdated_version = False
+
+    def rebuild_settings(self, config: Configuration):
+        self.__settings = GridUiSettings(config)
+        self.update_ui()
 
     def set_frame(self, frame: tk.Frame):
         self.__frame = tk.Frame(frame)
