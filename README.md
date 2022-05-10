@@ -42,7 +42,7 @@ A Stack-ratio of 1 for example would be just taking missions from one faction. I
 
 ### Updates
 The plugin pings GitHub on Startup to check if a new version is available. The plugin will notify you in the UI if
-a new version is available. You can off this behaviour in the Settings.
+a new version is available. You can turn off this behaviour in the Settings.
 
 The Version check is the only time the plugins does a Web-Call. And all it does is a GET to the [version file](./version).
 
