@@ -192,7 +192,7 @@ def __display_warning(frame: tk.Frame, warning: str, width: int, row: int):
 def _display_data(frame: tk.Frame, data: MassacreMissionData, settings: GridUiSettings) -> int:
     __display_data_header(frame, settings)
     row_pointer = 1
-    for faction in data.faction_to_count_lookup.keys():
+    for faction in sorted(data.faction_to_count_lookup.keys()):
         __display_row(frame, faction, data.faction_to_count_lookup[faction], data.stack_height, settings, row_pointer,
                       data.before_stack_height)
         row_pointer += 1
