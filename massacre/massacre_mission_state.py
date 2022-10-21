@@ -2,9 +2,9 @@
 This Module contains a subset of all active missions which only contain Massacre Missions
 """
 from typing import Callable
-from classes.logger_factory import logger
+from massacre.logger_factory import logger
 
-import classes.mission_repository
+import massacre.mission_repository
 
 
 class MassacreMission:
@@ -107,4 +107,4 @@ def __handle_new_missions_state(data: dict[int, dict]):
         listener(_massacre_mission_store)
 
 
-classes.mission_repository.active_missions_changed_event_listeners.append(__handle_new_missions_state)
+massacre.mission_repository.active_missions_changed_event_listeners.append(__handle_new_missions_state)

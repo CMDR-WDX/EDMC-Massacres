@@ -3,13 +3,13 @@ import os
 import tkinter
 from typing import Optional
 
-import classes.mission_aggregation_helper
-import classes.massacre_mission_state
+from massacre.mission_aggregation_helper import get_missions_for_all_cmdrs
+import massacre.massacre_mission_state
 
-from classes.ui import ui
-from classes.logger_factory import logger
-from classes.massacre_settings import configuration, build_settings_ui, push_new_changes
-from classes.version_check import build_worker
+from massacre.ui import ui
+from massacre.logger_factory import logger
+from massacre.massacre_settings import configuration, build_settings_ui, push_new_changes
+from massacre.version_check import build_worker
 
 plugin_name = os.path.basename(os.path.dirname(__file__))
 selected_cmdr: Optional[str] = None
@@ -37,10 +37,9 @@ def plugin_start3(_path: str) -> str:
 
     # Building Mission Index
     import datetime as dt
-    mission_uuid_to_mission_lookup = \
-        classes.mission_aggregation_helper.get_missions_for_all_cmdrs(dt.date.today() - dt.timedelta(weeks=2))
+    mission_uuid_to_mission_lookup = get_missions_for_all_cmdrs(dt.date.today() - dt.timedelta(weeks=2))
     logger.info(f"Found Missions for {len(mission_uuid_to_mission_lookup)} CMDRs (completed, finished, failed, etc)")
-    from classes.mission_repository import set_new_repo
+    from massacre.mission_repository import set_new_repo
     set_new_repo(mission_uuid_to_mission_lookup)
 
     logger.info("Awaiting CMDR Name to start building Mission Index")
@@ -52,18 +51,18 @@ def journal_entry(cmdr: str, _is_beta: bool, _system: str,
     if entry["event"] == "Missions":
         # Fetch the currently active missions and pass them to the Mission Registry
         active_mission_uuids = map(lambda x: int(x["MissionID"]), entry["Active"])
-        from classes.mission_repository import set_active_uuids
+        from massacre.mission_repository import set_active_uuids
         set_active_uuids(list(active_mission_uuids), cmdr)
 
     elif entry["event"] == "MissionAccepted":
         # A new mission has been accepted. The Mission Repository should be notified about this
-        from classes.mission_repository import mission_repository
+        from massacre.mission_repository import mission_repository
         mission_repository.notify_about_new_mission_accepted(entry, cmdr)
 
     elif entry["event"] in ["MissionAbandoned", "MissionCompleted"]:  # TODO: What about MissionRedirected?
         # Mission has been completed or failed -> It is no longer active
         mission_uuid = entry["MissionID"]
-        from classes.mission_repository import mission_repository
+        from massacre.mission_repository import mission_repository
         mission_repository.notify_about_mission_gone(mission_uuid)
 
 

@@ -2,8 +2,8 @@
 A wrapper around EDMCs Configuration
 """
 import os
-from classes.logger_factory import logger
-from classes.version_check import download_url
+from massacre.logger_factory import logger
+from massacre.version_check import download_url
 from typing import Callable
 from config import config
 import tkinter as tk
