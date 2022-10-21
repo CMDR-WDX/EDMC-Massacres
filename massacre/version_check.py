@@ -7,7 +7,7 @@ import sys
 import threading
 
 from requests import get
-from classes.logger_factory import logger
+from massacre.logger_factory import logger
 from pathlib import Path
 from typing import Callable
 

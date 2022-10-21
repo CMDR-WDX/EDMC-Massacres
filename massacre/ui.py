@@ -1,11 +1,11 @@
 import tkinter as tk
 from typing import Optional
 
-import classes.massacre_settings
-from classes.massacre_mission_state import massacre_mission_listeners, MassacreMission
-from classes.massacre_settings import Configuration
-from classes.logger_factory import logger
-from classes.version_check import open_download_page
+import massacre.massacre_settings
+from massacre.massacre_mission_state import massacre_mission_listeners, MassacreMission
+from massacre.massacre_settings import Configuration
+from massacre.logger_factory import logger
+from massacre.version_check import open_download_page
 from theme import theme
 
 
@@ -175,8 +175,8 @@ def __display_summary(frame: tk.Frame, data: MassacreMissionData, settings: Grid
     ratio_text = "{:.2f}".format(float(data.target_sum)/float(data.stack_height))
     reward_in_millions = float(data.reward) / 1_000_000
     wing_reward_in_millions = float(data.shareable_reward) / 1_000_000
-    reward_text = "{:.2f}".format(reward_in_millions/data.target_sum)
-    wing_reward_text = "{:.2f}".format(wing_reward_in_millions/data.target_sum)
+    reward_text = "{:.2f}".format(reward_in_millions/data.stack_height)
+    wing_reward_text = "{:.2f}".format(wing_reward_in_millions/data.stack_height)
     label_text = f"Ratio: {ratio_text}, Reward: {reward_text} ({wing_reward_text}) M CR/Kill. {data.target_sum} Kills."
 
     label = tk.Label(frame, text=label_text, fg="green")
@@ -236,8 +236,8 @@ class UI:
     def __init__(self):
         self.__frame: Optional[tk.Frame] = None
         self.__data: Optional[MassacreMissionData] = None
-        self.__settings: GridUiSettings = GridUiSettings(classes.massacre_settings.configuration)
-        classes.massacre_settings.configuration.config_changed_listeners.append(self.rebuild_settings)
+        self.__settings: GridUiSettings = GridUiSettings(massacre.massacre_settings.configuration)
+        massacre.massacre_settings.configuration.config_changed_listeners.append(self.rebuild_settings)
         self.__display_outdated_version = False
 
     def rebuild_settings(self, config: Configuration):
@@ -255,7 +255,7 @@ class UI:
         self.update_ui()
 
     def notify_about_settings_changed(self):
-        self.__settings: GridUiSettings = GridUiSettings(classes.massacre_settings.configuration)
+        self.__settings: GridUiSettings = GridUiSettings(massacre.massacre_settings.configuration)
         self.update_ui()
 
     def update_ui(self):

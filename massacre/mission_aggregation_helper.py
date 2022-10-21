@@ -3,7 +3,7 @@ import datetime as dt
 from datetime import datetime
 from pathlib import Path
 from config import config
-from classes.logger_factory import logger
+from massacre.logger_factory import logger
 
 file_location: str
 
@@ -46,7 +46,7 @@ def __extract_mission_accepted_events_from_log(file_path: Path) -> tuple[str, li
                     cmdr = str(line_as_json["Name"])
                 if line_as_json["event"] == "MissionAccepted":
                     return_list.append(line_as_json)
-            except IOError:
+            except Exception:
                 logger.warning(f"Failed to open File {file_path}. Skipping...")
             finally:
                 line = current_log_file.readline()

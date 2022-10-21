@@ -1,6 +1,6 @@
 from enum import Flag
 from typing import Callable, Optional
-from classes.logger_factory import logger
+from massacre.logger_factory import logger
 
 # The listeners are stored as a Tuple of Activator and Callback.
 # Callback: (mission as dict<mission_uuid, mission>) -> void
