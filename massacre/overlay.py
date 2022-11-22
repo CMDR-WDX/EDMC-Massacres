@@ -1,78 +1,10 @@
-import os
 from typing import Optional
 
 import massacre.massacre_settings
 from massacre.massacre_mission_state import massacre_mission_listeners, MassacreMission
 from massacre.massacre_settings import Configuration
 from massacre.logger_factory import logger
-from massacre.version_check import open_download_page
-from theme import theme
-
-class MassacreMissionData:
-    """
-    Creates a "data-view" for the OVERLAY from all massacre missions. Will be used to create a table-like OVERLAY
-    Done to split the calculations from the OVERLAY.
-    """
-    def __init__(self, massacre_state: dict[int, MassacreMission]):
-        self.warnings: list[str] = []
-        # Faction -> <Count, Reward, ShareableReward, DistanceToMax>
-        target_factions: list[str] = []
-        target_types: list[str] = []
-        target_systems: list[str] = []
-        self.faction_to_count_lookup: dict[str, tuple[int, int, int]] = {}
-        self.stack_height = 0
-        # This is the second-highest value. This is used to display the second-largest value in the delta-Field using
-        # a negative.
-        self.before_stack_height = 0
-        self.target_sum = 0
-        self.reward = 0
-        self.shareable_reward = 0
-
-        for mission in massacre_state.values():
-            mission_giver = mission.source_faction
-
-            if mission_giver not in self.faction_to_count_lookup.keys():
-                self.faction_to_count_lookup[mission_giver] = 0, 0, 0
-
-            kill_count, reward, shareable_reward = self.faction_to_count_lookup[mission_giver]
-            kill_count += mission.count
-            self.target_sum += mission.count
-            reward += mission.reward
-            if mission.is_wing:
-                shareable_reward += mission.reward
-
-            self.faction_to_count_lookup[mission_giver] = kill_count, reward, shareable_reward
-
-            self.shareable_reward += shareable_reward
-            self.reward += reward
-
-            if mission.target_faction not in target_factions:
-                target_factions.append(mission.target_faction)
-
-            if mission.target_type not in target_types:
-                target_types.append(mission.target_type)
-
-            if mission.target_system not in target_systems:
-                target_systems.append(mission.target_system)
-
-            if kill_count > self.stack_height:
-                self.stack_height = kill_count
-
-        # Check for Warnings
-        if len(target_factions) > 1:
-            self.warnings.append(f"Multiple Target Factions: {', '.join(target_factions)}!")
-        if len(target_types) > 1:
-            self.warnings.append(f"Multiple Target Types: {', '.join(target_types)}!")
-        if len(target_systems) > 1:
-            self.warnings.append(f"Multiple Target Systems: {', '.join(target_systems)}!")
-
-        # Calculate before_stack_height
-        for count, _a, _b in self.faction_to_count_lookup.values():
-            if count > self.before_stack_height and count != self.stack_height:
-                self.before_stack_height = count
-        if self.before_stack_height == 0:  # No other elements. All at max value.
-            self.before_stack_height = self.stack_height
-
+from massacre.ui import MassacreMissionData
 
 class GridOverlaySettings:
     """
