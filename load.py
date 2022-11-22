@@ -69,6 +69,10 @@ def journal_entry(cmdr: str, _is_beta: bool, _system: str,
         if mission_repository is not None:
             mission_repository.notify_about_mission_gone(mission_uuid)
 
+    if overlay and entry["event"] == "SendText" and entry["Message"]:
+        if entry["Message"].strip() == "!stack":
+            overlay.update_overlay()
+
 
 def plugin_prefs(parent: Any, _cmdr: str, _is_beta: bool):
     return build_settings_ui(parent)
