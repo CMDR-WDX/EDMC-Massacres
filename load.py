@@ -6,6 +6,7 @@ from os.path import basename, dirname
 from massacre.mission_aggregation_helper import get_missions_for_all_cmdrs
 
 from massacre.ui import ui
+from massacre.overlay import overlay
 from massacre.logger_factory import logger
 from massacre.massacre_settings import configuration, build_settings_ui, push_new_changes
 from massacre.version_check import build_worker
@@ -16,6 +17,8 @@ selected_cmdr: Optional[str] = None
 
 def plugin_app(parent: tkinter.Frame) -> tkinter.Frame:
     ui.set_frame(parent)
+    if overlay:
+        overlay.update_overlay()
     return parent
 
 
