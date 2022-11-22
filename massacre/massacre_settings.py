@@ -62,16 +62,25 @@ class Configuration:
     @display_first_user_help.setter
     def display_first_user_help(self, value: bool):
         config.set(f"{self.plugin_name}.display_first_user_help", value)
-
+    
     #######################################
     @property
-    def display_use_overlay(self):
-        return config.get_bool(f"{self.plugin_name}.display_use_overlay", default=True)
-
-    @display_use_overlay.setter
-    def display_use_overlay(self, value: bool):
-        config.set(f"{self.plugin_name}.display_use_overlay", value)
-
+    def overlay_enabled(self):
+        return config.get_bool(f"{self.plugin_name}.overlay_enabled", default=True)
+    
+    @overlay_enabled.setter
+    def overlay_enabled(self, value: bool):
+        config.set(f"{self.plugin_name}.overlay_enabled", value)
+    
+    #######################################
+    @property
+    def overlay_ttl(self):
+        return config.get_int(f"{self.plugin_name}.overlay_ttl", default=30)
+    
+    @overlay_ttl.setter
+    def overlay_ttl(self, value: int):
+        config.set(f"{self.plugin_name}.overlay_ttl", value)
+    
     #######################################
     def __init__(self):
         self.plugin_name = os.path.basename(os.path.dirname(__file__))
@@ -88,8 +97,10 @@ class Configuration:
             self.display_sum_row = data["display_sum_row"].get()
         if "display_ratio_and_cr_per_kill_row" in keys:
             self.display_ratio_and_cr_per_kill_row = data["display_ratio_and_cr_per_kill_row"].get()
-        if "display_use_overlay" in keys:
-            self.display_use_overlay = data["display_use_overlay"].get()
+        if "overlay_enabled" in keys:
+            self.overlay_enabled = data["overlay_enabled"].get()
+        if "overlay_ttl" in keys:
+            self.overlay_ttl = data['overlay_ttl'].get()
 
         for listener in self.config_changed_listeners:
             listener(self)
@@ -129,8 +140,10 @@ def build_settings_ui(root: nb.Notebook) -> tk.Frame:
         tk.IntVar(value=configuration.display_sum_row)
     __setting_changes["display_ratio_and_cr_per_kill_row"] = \
         tk.IntVar(value=configuration.display_ratio_and_cr_per_kill_row)
-    __setting_changes["display_use_overlay"] = \
-        tk.IntVar(value=configuration.display_use_overlay)
+    __setting_changes["overlay_enabled"] = \
+        tk.IntVar(value=configuration.overlay_enabled)
+    __setting_changes["overlay_ttl"] = \
+        tk.IntVar(value=configuration.overlay_ttl)
 
     nb.Label(frame, text="UI Settings", pady=10).grid(sticky=tk.W, padx=title_offset)
     ui_settings_checkboxes = [
@@ -139,13 +152,21 @@ def build_settings_ui(root: nb.Notebook) -> tk.Frame:
         nb.Checkbutton(frame, text="Display Sum-Row",
                        variable=__setting_changes["display_sum_row"]),
         nb.Checkbutton(frame, text="Display Summary-Row",
-                       variable=__setting_changes["display_ratio_and_cr_per_kill_row"]),
-        nb.Checkbutton(frame, text="Display: Use overlay",
-                       variable=__setting_changes["display_use_overlay"]),
+                       variable=__setting_changes["display_ratio_and_cr_per_kill_row"])
     ]
     for entry in ui_settings_checkboxes:
         entry.grid(columnspan=2, padx=checkbox_offset, sticky=tk.W)
-
+    
+    nb.Label(frame, text="Overlay", pady=10).grid(sticky=tk.W, padx=title_offset)
+    logger.debug(configuration.overlay_enabled)
+    logger.debug(configuration.overlay_ttl)
+    logger.debug(configuration.display_sum_row)
+    nb.Checkbutton(frame, text="Enable overlay", variable=__setting_changes["overlay_enabled"]).grid(padx=checkbox_offset, sticky=tk.W)
+    ttl_frame = nb.Frame(frame)
+    nb.Label(ttl_frame, text="Overlay TTL:").grid(column=0, row=0, sticky=tk.W)
+    nb.Entry(ttl_frame, textvariable=__setting_changes["overlay_ttl"]).grid(column=1, row=0, sticky=tk.W, padx=checkbox_offset)
+    ttl_frame.grid(sticky=tk.W, padx=checkbox_offset)
+    
     nb.Label(frame, text="Other", pady=10, padx=title_offset).grid(sticky=tk.W)
     nb.Checkbutton(frame, text="Check for Updates on Start", variable=__setting_changes["check_updates"])\
         .grid(columnspan=2, sticky=tk.W, padx=checkbox_offset)

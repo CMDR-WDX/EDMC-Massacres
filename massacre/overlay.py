@@ -79,7 +79,8 @@ class GridOverlaySettings:
     Subset of the entire Configuration that focuses on which information is displayed
     """
     def __init__(self, config: Configuration):
-        self.use_overlay = config.display_use_overlay
+        self.use_overlay = config.overlay_enabled
+        self.overlay_ttl = config.overlay_ttl
 
 
 def __display_data_header(settings: GridOverlaySettings):
@@ -181,9 +182,16 @@ class Overlay:
         else:
             lines = _display_data(self.__data, self.__settings)
 
-        if lines:
-            self.__overlay.send_message('massacre-update', os.linesep.join(lines), 'yellow', 0, 0, ttl=30)
-
+        line_y = 0
+        for line in lines:
+            self.__overlay.send_message(f'massacre-line-{line_y}',
+                                        line,
+                                        'yellow',
+                                        0,
+                                        line_y,
+                                        ttl=self.__settings.overlay_ttl)
+            line_y+=20
+        
         logger.info("Overlay Update done")
 
 overlay = Overlay()
