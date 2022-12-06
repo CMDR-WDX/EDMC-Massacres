@@ -1,8 +1,10 @@
+from pathlib import Path
 import logging
 import os
+from os.path import basename, dirname
 import config
 
-_plugin_name = "massacre"
+_plugin_name = basename(Path(dirname(__file__)).parent)
 
 
 def __build_logger_for_module() -> logging.Logger:
