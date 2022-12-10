@@ -2,9 +2,9 @@ import datetime
 import os
 import tkinter
 from typing import Optional
+from os.path import basename, dirname
 
 from massacre.mission_aggregation_helper import get_missions_for_all_cmdrs
-import massacre.massacre_mission_state
 
 from massacre.ui import ui
 from massacre.logger_factory import logger
@@ -43,7 +43,7 @@ def plugin_start3(_path: str) -> str:
     set_new_repo(mission_uuid_to_mission_lookup)
 
     logger.info("Awaiting CMDR Name to start building Mission Index")
-    return "massacre"
+    return basename(dirname(__file__))
 
 
 def journal_entry(cmdr: str, _is_beta: bool, _system: str,
