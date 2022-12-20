@@ -118,7 +118,7 @@ def open_download_page():
     if platform == "darwin":
         subprocess.Popen(["open", download_url])
     elif platform == "win32":
-        os.startfile(download_url)
+        os.startfile(download_url) # type: ignore
     else:
         try:
             subprocess.Popen(["xdg-open", download_url])

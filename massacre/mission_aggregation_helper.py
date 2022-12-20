@@ -1,6 +1,5 @@
 import json
 import datetime as dt
-from datetime import datetime
 from pathlib import Path
 from config import config
 from massacre.logger_factory import logger
@@ -12,7 +11,7 @@ if hasattr(config, 'get_str'):
     file_location = config.get_str("journaldir")
 else:
     # noinspection SpellCheckingInspection
-    file_location = config.get("journaldir")
+    file_location = config.get("journaldir") #type: ignore
 if file_location is None or file_location == "":
     file_location = config.default_journal_dir
 
