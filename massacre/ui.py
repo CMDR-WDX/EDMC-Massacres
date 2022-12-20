@@ -20,8 +20,15 @@ class MassacreMissionData:
         # if Log Level is set to DEBUG, this will output the current Massacre Mission State to the Log File.
         # for easy searching, you can Ctrl+F for "MASSACRE_MISSION_DATA_INPUT" and get the line below that.
         logger.debug("MassacreMissionData input below: MASSACRE_MISSION_DATA_INPUT")
-        logger.debug(json.dumps(massacre_state))
-
+        try:
+            debug_message_state: dict[int, dict] = {}
+            for k in massacre_state.keys():
+                v = massacre_state[k]
+                debug_message_state[k] = v.as_dict()
+            logger.debug(json.dumps(debug_message_state))
+        except Exception:
+            logger.error("Failed to Log debug_message_state")
+            pass
         # Faction -> <Count, Reward, ShareableReward, DistanceToMax>
         target_factions: list[str] = []
         """

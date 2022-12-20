@@ -55,6 +55,19 @@ class MassacreMission:
     def is_wing(self):
         return self._is_wing
 
+    def as_dict(self):
+        as_dict = {
+            "target_type": self.target_type,
+            "mission_id": self.mission_id,
+            "target_faction": self.target_faction,
+            "count": self.count,
+            "reward": self.reward,
+            "target_system": self.target_system,
+            "source_faction": self.source_faction,
+            "is_wing": self.is_wing
+        }
+        return as_dict
+
 
 def __build_from_event(event: dict) -> MassacreMission:
     """
