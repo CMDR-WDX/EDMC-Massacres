@@ -3,57 +3,37 @@ This Module contains a subset of all active missions which only contain Massacre
 """
 from typing import Callable
 from massacre.logger_factory import logger
+from dataclasses import dataclass
 
 import massacre.mission_repository
 
-
+@dataclass
 class MassacreMission:
     """
     Class defining a Massacre Mission.
     This class is used in the UI to generate a data view
     """
-    def __init__(self, target_faction: str, count: int, reward: int, target_system: str, target_type: str,
-                 source_faction: str, mission_id: int, wing: bool):
-        self._target_faction: str = target_faction
-        self._count: int = count
-        self._reward: int = reward
-        self._target_system: str = target_system
-        self._target_type: str = target_type
-        self._source_faction: str = source_faction
-        self._is_wing: bool = wing
-        self._id: int = mission_id
+    target_faction: str 
+    count: int
+    reward: int
+    target_system: str
+    target_type: str
+    source_faction: str
+    is_wing: bool
+    id: int
 
-    @property
-    def target_type(self):
-        return self._target_type
-
-    @property
-    def mission_id(self):
-        return self._id
-
-    @property
-    def target_faction(self):
-        return self._target_faction
-
-    @property
-    def count(self):
-        return self._count
-
-    @property
-    def reward(self):
-        return self._reward
-
-    @property
-    def target_system(self):
-        return self._target_system
-
-    @property
-    def source_faction(self):
-        return self._source_faction
-
-    @property
-    def is_wing(self):
-        return self._is_wing
+    def as_dict(self):
+        as_dict = {
+            "target_type": self.target_type,
+            "mission_id": self.id,
+            "target_faction": self.target_faction,
+            "count": self.count,
+            "reward": self.reward,
+            "target_system": self.target_system,
+            "source_faction": self.source_faction,
+            "is_wing": self.is_wing
+        }
+        return as_dict
 
 
 def __build_from_event(event: dict) -> MassacreMission:
@@ -68,7 +48,16 @@ def __build_from_event(event: dict) -> MassacreMission:
     source_faction: str = event["Faction"]
     mission_id: int = event["MissionID"]
     wing: bool = event["Wing"]
-    return MassacreMission(target_faction, count, reward, target_system, target_type, source_faction, mission_id, wing)
+    return MassacreMission(
+            target_faction, 
+            count, 
+            reward, 
+            target_system, 
+            target_type, 
+            source_faction, 
+            wing, 
+            mission_id
+        )
 
 
 massacre_mission_listeners: list[Callable[[dict[int, MassacreMission]], None]] = []
@@ -100,7 +89,7 @@ def __handle_new_missions_state(data: dict[int, dict]):
     # Push new Mission State to the Massacre Mission Store
     _massacre_mission_store.clear()
     for mission in relevant_missions:
-        _massacre_mission_store[mission.mission_id] = mission
+        _massacre_mission_store[mission.id] = mission
 
     # Emit Event
     for listener in massacre_mission_listeners:

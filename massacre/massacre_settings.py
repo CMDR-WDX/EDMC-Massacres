@@ -106,7 +106,7 @@ def build_settings_ui(root: nb.Notebook) -> tk.Frame:
     checkbox_offset = 10
     title_offset = 20
 
-    frame = nb.Frame(root)
+    frame = nb.Frame(root) #type: ignore
     frame.columnconfigure(1, weight=1)
     __setting_changes.clear()
     __setting_changes["check_updates"] = \
@@ -127,7 +127,7 @@ def build_settings_ui(root: nb.Notebook) -> tk.Frame:
         nb.Checkbutton(frame, text="Display Summary-Row",
                        variable=__setting_changes["display_ratio_and_cr_per_kill_row"])
     ]
-    for i, entry in enumerate(ui_settings_checkboxes):
+    for entry in ui_settings_checkboxes:
         entry.grid(columnspan=2, padx=checkbox_offset, sticky=tk.W)
 
     nb.Label(frame, text="Other", pady=10, padx=title_offset).grid(sticky=tk.W)

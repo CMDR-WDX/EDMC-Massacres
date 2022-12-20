@@ -1,5 +1,7 @@
+import json
 import tkinter as tk
 from typing import Optional
+from dataclasses import dataclass
 
 import massacre.massacre_settings
 from massacre.massacre_mission_state import massacre_mission_listeners, MassacreMission
@@ -14,39 +16,92 @@ class MassacreMissionData:
     Creates a "data-view" for the UI from all massacre missions. Will be used to create a table-like UI
     Done to split the calculations from the UI.
     """
+
+    @dataclass
+    class FactionState:
+        killcount: int
+        reward: int 
+        shareable_reward: int
+
+
     def __init__(self, massacre_state: dict[int, MassacreMission]):
         self.warnings: list[str] = []
+        # if Log Level is set to DEBUG, this will output the current Massacre Mission State to the Log File.
+        # for easy searching, you can Ctrl+F for "MASSACRE_MISSION_DATA_INPUT" and get the line below that.
+        logger.debug("MassacreMissionData input below: MASSACRE_MISSION_DATA_INPUT")
+        try:
+            debug_message_state: dict[int, dict] = {}
+            for k in massacre_state.keys():
+                v = massacre_state[k]
+                debug_message_state[k] = v.as_dict()
+            logger.debug(json.dumps(debug_message_state))
+        except Exception:
+            logger.error("Failed to Log debug_message_state")
+            pass
         # Faction -> <Count, Reward, ShareableReward, DistanceToMax>
         target_factions: list[str] = []
+        """
+        A list containing all Target Factions, as in Factions you are meant to 
+        kill as part of the mission. This is used to warn the User that they
+        have multiple targets and should recheck their stack.
+        """
         target_types: list[str] = []
+        """
+        List of all target types (like Civilian, Pirates, etc). Will warn the User if they 
+        have separate stacks.
+        """
         target_systems: list[str] = []
-        self.faction_to_count_lookup: dict[str, tuple[int, int, int]] = {}
+        """
+        List of all target systems - as in locations where the targets need to be killed.
+        This will warn the player that they should recheck their stack.
+        """
+        self.faction_to_count_lookup: dict[str, MassacreMissionData.FactionState] = {}
         self.stack_height = 0
-        # This is the second-highest value. This is used to display the second-largest value in the delta-Field using
-        # a negative.
+        """
+        The highest amount of kills needed per faction in this stack.
+        """
         self.before_stack_height = 0
+        """
+        The SECOND-highest amount of kills needed per faction in this stack.
+        This is used for the delta-Column of the highest Stack to show the negative
+        delta towards the second-highest stack.
+        """
         self.target_sum = 0
+        """
+        The amount of total mission kills (not total required kills (see stack_height))
+        """
         self.reward = 0
+        """
+        How much the player should expect in Wing- and Non-Wing Missions
+        """
         self.shareable_reward = 0
+        """
+        How much the player should expect in Wing-Missions
+        """
 
         for mission in massacre_state.values():
             mission_giver = mission.source_faction
+            """This is the Faction that handed out the mission"""
 
             if mission_giver not in self.faction_to_count_lookup.keys():
-                self.faction_to_count_lookup[mission_giver] = 0, 0, 0
+                """If no Mission from that Faction is known yet, it will first be initialized"""
+                self.faction_to_count_lookup[mission_giver] = MassacreMissionData.FactionState(0, 0, 0)
 
-            kill_count, reward, shareable_reward = self.faction_to_count_lookup[mission_giver]
-            kill_count += mission.count
+            faction_state = self.faction_to_count_lookup[mission_giver]
+            """
+            Get the currently summed kill count and rewards from this faction. This might contain data
+            from previous Missions from that faction, or 0,0,0 if this is the first mission.
+            """
+            faction_state.killcount += mission.count
             self.target_sum += mission.count
-            reward += mission.reward
+            faction_state.reward += mission.reward
+            # Only wing missions are considered for shareable rewards
             if mission.is_wing:
-                shareable_reward += mission.reward
+                faction_state.shareable_reward += mission.reward
 
-            self.faction_to_count_lookup[mission_giver] = kill_count, reward, shareable_reward
-
-            self.shareable_reward += shareable_reward
-            self.reward += reward
-
+            ### Add Faction, Target Type and Target System to the list if they are not 
+            ### yet present. This will be later used to generate a warning if more than 
+            ### one of a type is present. See "Check for Warnings block below"
             if mission.target_faction not in target_factions:
                 target_factions.append(mission.target_faction)
 
@@ -56,8 +111,13 @@ class MassacreMissionData:
             if mission.target_system not in target_systems:
                 target_systems.append(mission.target_system)
 
-            if kill_count > self.stack_height:
-                self.stack_height = kill_count
+            if faction_state.killcount > self.stack_height:
+                self.stack_height = faction_state.killcount
+
+        # After all Missions have been handled, iterate through the faction_to_count_lookup to calculate the Total Rewards   
+        for faction_state in self.faction_to_count_lookup.values():
+            self.reward += faction_state.reward
+            self.shareable_reward += faction_state.shareable_reward
 
         # Check for Warnings
         if len(target_factions) > 1:
@@ -68,9 +128,9 @@ class MassacreMissionData:
             self.warnings.append(f"Multiple Target Systems: {', '.join(target_systems)}!")
 
         # Calculate before_stack_height
-        for count, _a, _b in self.faction_to_count_lookup.values():
-            if count > self.before_stack_height and count != self.stack_height:
-                self.before_stack_height = count
+        for faction_state in self.faction_to_count_lookup.values():
+            if faction_state.killcount > self.before_stack_height and faction_state.killcount != self.stack_height:
+                self.before_stack_height = faction_state.killcount
         if self.before_stack_height == 0:  # No other elements. All at max value.
             self.before_stack_height = self.stack_height
 
@@ -130,24 +190,23 @@ def __display_data_header(frame: tk.Frame, settings: GridUiSettings, row=0):
         item.grid(row=row, column=i, sticky=tk.W)
 
 
-def __display_row(frame: tk.Frame, faction: str, data: tuple[int, int, int], max_count: int,
+def __display_row(frame: tk.Frame, faction: str, data: MassacreMissionData.FactionState, max_count: int,
                   settings: GridUiSettings, row: int, second_largest_count: int):
     """
     Draw one Data-Row for the Table
     """
-    count, reward, shareable_reward = data
-    reward_str = "{:.1f}".format(float(reward) / 1_000_000)
-    shareable_reward_str = "{:.1f}".format(float(shareable_reward) / 1_000_000)
+    reward_str = "{:.1f}".format(float(data.reward) / 1_000_000)
+    shareable_reward_str = "{:.1f}".format(float(data.shareable_reward) / 1_000_000)
 
     faction_label = tk.Label(frame, text=faction)
-    kills_label = tk.Label(frame, text=count)
+    kills_label = tk.Label(frame, text=data.killcount)
     payout_label = tk.Label(frame, text=f"{reward_str} ({shareable_reward_str})")
 
     ui_elements = [faction_label, kills_label, payout_label]
 
     if settings.delta:
         # Calculate difference
-        delta = max_count - count
+        delta = max_count - data.killcount
         text = delta if delta > 0 else second_largest_count - max_count
         delta_label = tk.Label(frame, text=str(text))
         ui_elements.append(delta_label)
@@ -285,7 +344,7 @@ class UI:
     # To be called from thread
     def notify_version_outdated(self):
         self.__display_outdated_version = True
-        self.__frame.event_generate("<<Refresh>>")
+        self.__frame.event_generate("<<Refresh>>") # type: ignore
 
     # To be called from Button
     def notify_version_outdated_dismissed(self):
