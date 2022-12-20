@@ -25,16 +25,15 @@ def __display_data_header(settings: GridOverlaySettings):
     return overlay_elements
 
 
-def __display_row(faction: str, data: tuple[int, int, int], max_count: int,
+def __display_row(faction: str, data: MassacreMissionData.FactionState, max_count: int,
                   settings: GridOverlaySettings, second_largest_count: int):
     """
     Draw one Data-Row for the Table
     """
-    count, reward, shareable_reward = data
-    reward_str = "{:.1f}".format(float(reward) / 1_000_000)
-    shareable_reward_str = "{:.1f}".format(float(shareable_reward) / 1_000_000)
+    reward_str = "{:.1f}".format(float(data.reward) / 1_000_000)
+    shareable_reward_str = "{:.1f}".format(float(data.shareable_reward) / 1_000_000)
     whole_reward_str = f'{reward_str} ({shareable_reward_str})'
-    overlay_elements = [f'{count:4}', f'{whole_reward_str:{len("Reward (Wing)")}}', f'{faction:15}']
+    overlay_elements = [f'{data.killcount:5}', f'{whole_reward_str:{len("Reward (Wing)")}}', f'{faction:15}']
 
     return overlay_elements
 
@@ -47,15 +46,16 @@ def __display_sum(data: MassacreMissionData, _settings: GridOverlaySettings):
     reward_sum_normal = "{:.1f}".format(float(data.reward) / 1_000_000)
     reward_sum_wing = "{:.1f}".format(float(data.shareable_reward) / 1_000_000)
     reward_sum = f"{reward_sum_normal} ({reward_sum_wing})"
-    return [f'{kill_sum:4}', f'{reward_sum:{len("Reward (Wing)")}}', f'{"Sum":15}']
+    return [f'{kill_sum:5}', f'{reward_sum:{len("Reward (Wing)")}}', f'{"Sum":15}']
 
 def _display_data(data: MassacreMissionData, settings: GridOverlaySettings):
     lines = []
-    lines.append('|'.join(__display_data_header(overlay, settings)))
-    for faction in sorted(data.faction_to_count_lookup.keys()):
-        lines.append('|'.join(__display_row(overlay, faction, data.faction_to_count_lookup[faction], data.stack_height, settings, data.before_stack_height)))
+    lines.append('|'.join(__display_data_header(settings)))
 
-    lines.append('|'.join(__display_sum(overlay, data, settings)))
+    lines.append('|'.join(__display_sum(data, settings)))
+
+    for faction in sorted(data.faction_to_count_lookup.keys()):
+        lines.append('|'.join(__display_row(faction, data.faction_to_count_lookup[faction], data.stack_height, settings, data.before_stack_height)))
 
     lines.extend(data.warnings)
 
@@ -71,8 +71,8 @@ class Overlay:
         self.__overlay = None
         if self.__settings.use_overlay:
             try:
-                import EDMCOverlay
-                self.__overlay = EDMCOverlay.Overlay()
+                import edmcoverlay
+                self.__overlay = edmcoverlay.Overlay()
             except ModuleNotFoundError:
                 logger.warning("Overlay library could not be loaded.")
                 
@@ -118,7 +118,7 @@ class Overlay:
         for line in lines:
             self.__overlay.send_message(f'massacre-line-{line_y}',
                                         line,
-                                        'yellow',
+                                        'green',
                                         0,
                                         line_y,
                                         ttl=self.__settings.overlay_ttl)
