@@ -7,14 +7,15 @@ from massacre.integrations.integration import Integration
 import myNotebook as nb
 
 from massacre.integrations.example import ExampleIntegration
+from massacre.integrations.overlay.integration import OverlayIntegration
 
-__INTEGRATION_CONSTRUCTORS = [ExampleIntegration]
+__INTEGRATION_CONSTRUCTORS = [ExampleIntegration, OverlayIntegration]
 """
 Put all Integration Classes in here
 """
 
 __ACTIVE_INSTANCES: Optional[list[Integration]] = None
-__INACTIVE_INSTANCES: Optional[list[tuple[bool, Optional[str]]]] = None
+__INACTIVE_INSTANCES: Optional[list[tuple[str, Optional[str]]]] = None
 """
 used by get_all_active once built
 
@@ -33,28 +34,25 @@ def __init_state():
             if result is True:
                 instance.notify_initialize()
                 __ACTIVE_INSTANCES.append(instance)
-            elif type(result) is str:
-                __INACTIVE_INSTANCES.append((instance.get_name(), result))
             else:
-                __INACTIVE_INSTANCES.append((instance.get_name(), None))
-
-
-
+                result_val = result if type(result) is str else None
+                __INACTIVE_INSTANCES.append((instance.get_name(), result_val))
+            
 def get_all_active() -> list[Integration]:
     """
     Lazy-Init Function that returns all active Integrations
     """
     __init_state()
-    
+    assert __ACTIVE_INSTANCES is not None
     return __ACTIVE_INSTANCES
-
+    
 
 def get_all_inactive() -> list[tuple[str, Optional[str]]]:
     """
     Lazy-Init Function that returns all inactive Integration with an Optional Reason
     """
     __init_state()
-
+    assert __INACTIVE_INSTANCES is not None
     return __INACTIVE_INSTANCES
 
 

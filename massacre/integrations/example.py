@@ -21,7 +21,6 @@ class ExampleIntegrationConfig:
     """
     
     def __init__(self) -> None:
-        import massacre.massacre_settings
         self.prefix = f"{massacre_settings.plugin_name}.integrations.example"
 
 
@@ -93,7 +92,6 @@ class ExampleIntegration(Integration):
         self.__http_thread.start()
 
     def notify_can_be_activated(self) -> bool:
-        #return "The Stars didn't align :c"
         return True; # We just say this can always be activated for the sake of the example. 
 
     def notify_initialize(self):
@@ -108,8 +106,10 @@ class ExampleIntegration(Integration):
         self.__settings_temp["address"] = tk.StringVar(value=self.__config.post_address)
 
         nb.Checkbutton(frame, text="Activate Integration", variable=self.__settings_temp["active"]).grid(columnspan=2, padx=2, sticky=tk.W)
-        nb.Label(frame, text="POST Address").grid(columnspan=2, padx=2, sticky=tk.W)
-        nb.Entry(frame, textvariable=self.__settings_temp["address"]).grid(columnspan=2, padx=2, sticky=tk.W)
+        address_frame = nb.Frame(frame)
+        nb.Label(address_frame, text="POST Address").grid(column=0, row= 0, padx=2, sticky=tk.W)
+        nb.Entry(address_frame, textvariable=self.__settings_temp["address"]).grid(column=1, row=0, padx=2, sticky=tk.W)
+        address_frame.grid(sticky=tk.W)
         
     def notify_settings_finished(self) -> None:
         keys = self.__settings_temp.keys()

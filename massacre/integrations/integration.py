@@ -23,7 +23,7 @@ class Integration(ABC):
         return False 
 
     @abstractmethod
-    def notify_initialize(_) -> None:
+    def notify_initialize(self) -> None:
         """
         Do not use the classes' constructor to initialize the Integration, as at that point we do not know yet if 
         the Integration can be activated. Use this Method instead.
@@ -31,26 +31,33 @@ class Integration(ABC):
         pass
 
     @abstractmethod
-    def notify_settings_start(_, settings_ui) -> None:
+    def notify_settings_start(self, settings_ui) -> None:
         """
         Invoked by the Plugin when the user opens the settings. Add your own settings logic here.
         """ 
         pass
 
     @abstractmethod
-    def notify_settings_finished(_) -> None:
+    def notify_settings_finished(self) -> None:
         """
         Invoked by the Plugin when the user is done changing settings. Add settings committing logic here.
         """
         pass
 
     @abstractmethod 
-    def get_name(_) -> str:
+    def get_name(self) -> str:
         """
         Returns the name of this integration. used in Logs and injected Settings
         """
         pass
 
+    def notify_new_event(self, event) -> None:
+        """
+        Invoked by the Plugin if there is a new Event passed from EDMC.
+
+        Note that this is intentionally note marked with @abstractmethod as not all integrations are expected to require an event
+        """
+        pass
 
 
     

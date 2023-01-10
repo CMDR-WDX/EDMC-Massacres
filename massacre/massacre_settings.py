@@ -64,24 +64,6 @@ class Configuration:
         config.set(f"{self.plugin_name}.display_first_user_help", value)
     
     #######################################
-    @property
-    def overlay_enabled(self):
-        return config.get_bool(f"{self.plugin_name}.overlay_enabled", default=True)
-    
-    @overlay_enabled.setter
-    def overlay_enabled(self, value: bool):
-        config.set(f"{self.plugin_name}.overlay_enabled", value)
-    
-    #######################################
-    @property
-    def overlay_ttl(self):
-        return config.get_int(f"{self.plugin_name}.overlay_ttl", default=30)
-    
-    @overlay_ttl.setter
-    def overlay_ttl(self, value: int):
-        config.set(f"{self.plugin_name}.overlay_ttl", value)
-    
-    #######################################
     def __init__(self, plugin_name: str):
        self.plugin_name = plugin_name
        self.config_changed_listeners: list[Callable[[Configuration], None]] = []
@@ -143,10 +125,6 @@ def build_settings_ui(root: nb.Notebook) -> tk.Frame:
         tk.IntVar(value=configuration.display_sum_row)
     __setting_changes["display_ratio_and_cr_per_kill_row"] = \
         tk.IntVar(value=configuration.display_ratio_and_cr_per_kill_row)
-    __setting_changes["overlay_enabled"] = \
-        tk.IntVar(value=configuration.overlay_enabled)
-    __setting_changes["overlay_ttl"] = \
-        tk.IntVar(value=configuration.overlay_ttl)
 
     nb.Label(frame, text="UI Settings", pady=10).grid(sticky=tk.W, padx=title_offset)
     ui_settings_checkboxes = [
@@ -159,18 +137,7 @@ def build_settings_ui(root: nb.Notebook) -> tk.Frame:
     ]
     for entry in ui_settings_checkboxes:
         entry.grid(columnspan=2, padx=checkbox_offset, sticky=tk.W)
-    
-
-    #nb.Label(frame, text="Overlay", pady=10).grid(sticky=tk.W, padx=title_offset)
-    #logger.debug(configuration.overlay_enabled)
-    #logger.debug(configuration.overlay_ttl)
-    #logger.debug(configuration.display_sum_row)
-    #nb.Checkbutton(frame, text="Enable overlay", variable=__setting_changes["overlay_enabled"]).grid(padx=checkbox_offset, sticky=tk.W)
-    #ttl_frame = nb.Frame(frame)
-    #nb.Label(ttl_frame, text="Overlay TTL:").grid(column=0, row=0, sticky=tk.W)
-    #nb.Entry(ttl_frame, textvariable=__setting_changes["overlay_ttl"]).grid(column=1, row=0, sticky=tk.W, padx=checkbox_offset)
-    #ttl_frame.grid(sticky=tk.W, padx=checkbox_offset)
-    
+ 
     nb.Label(frame, text="Other", pady=10, padx=title_offset).grid(sticky=tk.W)
     nb.Checkbutton(frame, text="Check for Updates on Start", variable=__setting_changes["check_updates"])\
         .grid(columnspan=2, sticky=tk.W, padx=checkbox_offset)
