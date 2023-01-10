@@ -4,14 +4,14 @@ A wrapper around EDMCs Configuration
 import os
 from massacre.logger_factory import logger
 from massacre.version_check import download_url
-from typing import Callable
+from typing import Callable, Optional
 from config import config
 import tkinter as tk
-from tkinter import ttk
 from ttkHyperlinkLabel import HyperlinkLabel
 # noinspection PyPep8Naming
 import myNotebook as nb
 
+plugin_name = os.path.basename(os.path.dirname(__file__))
 
 class Configuration:
     """
@@ -82,9 +82,9 @@ class Configuration:
         config.set(f"{self.plugin_name}.overlay_ttl", value)
     
     #######################################
-    def __init__(self):
-        self.plugin_name = os.path.basename(os.path.dirname(__file__))
-        self.config_changed_listeners: list[Callable[[Configuration], None]] = []
+    def __init__(self, plugin_name: str):
+       self.plugin_name = plugin_name
+       self.config_changed_listeners: list[Callable[[Configuration], None]] = []
 
     def notify_about_changes(self, data: dict[str, tk.Variable]):
         keys = data.keys()
@@ -106,7 +106,7 @@ class Configuration:
             listener(self)
         
 
-configuration = Configuration()
+configuration = Configuration(plugin_name)
 
 
 __setting_changes: dict[str, tk.Variable] = {}
@@ -118,6 +118,9 @@ this dict are then applied to the config.
 
 def push_new_changes():
     """Callback to be used when the user has closed the Settings. This applies changes to the Config."""
+    import massacre.integrations.main
+    massacre.integrations.main.notify_about_settings_finished()
+    
     configuration.notify_about_changes(__setting_changes)
     __setting_changes.clear()
 
@@ -157,22 +160,31 @@ def build_settings_ui(root: nb.Notebook) -> tk.Frame:
     for entry in ui_settings_checkboxes:
         entry.grid(columnspan=2, padx=checkbox_offset, sticky=tk.W)
     
-    nb.Label(frame, text="Overlay", pady=10).grid(sticky=tk.W, padx=title_offset)
-    logger.debug(configuration.overlay_enabled)
-    logger.debug(configuration.overlay_ttl)
-    logger.debug(configuration.display_sum_row)
-    nb.Checkbutton(frame, text="Enable overlay", variable=__setting_changes["overlay_enabled"]).grid(padx=checkbox_offset, sticky=tk.W)
-    ttl_frame = nb.Frame(frame)
-    nb.Label(ttl_frame, text="Overlay TTL:").grid(column=0, row=0, sticky=tk.W)
-    nb.Entry(ttl_frame, textvariable=__setting_changes["overlay_ttl"]).grid(column=1, row=0, sticky=tk.W, padx=checkbox_offset)
-    ttl_frame.grid(sticky=tk.W, padx=checkbox_offset)
+
+    #nb.Label(frame, text="Overlay", pady=10).grid(sticky=tk.W, padx=title_offset)
+    #logger.debug(configuration.overlay_enabled)
+    #logger.debug(configuration.overlay_ttl)
+    #logger.debug(configuration.display_sum_row)
+    #nb.Checkbutton(frame, text="Enable overlay", variable=__setting_changes["overlay_enabled"]).grid(padx=checkbox_offset, sticky=tk.W)
+    #ttl_frame = nb.Frame(frame)
+    #nb.Label(ttl_frame, text="Overlay TTL:").grid(column=0, row=0, sticky=tk.W)
+    #nb.Entry(ttl_frame, textvariable=__setting_changes["overlay_ttl"]).grid(column=1, row=0, sticky=tk.W, padx=checkbox_offset)
+    #ttl_frame.grid(sticky=tk.W, padx=checkbox_offset)
     
     nb.Label(frame, text="Other", pady=10, padx=title_offset).grid(sticky=tk.W)
     nb.Checkbutton(frame, text="Check for Updates on Start", variable=__setting_changes["check_updates"])\
         .grid(columnspan=2, sticky=tk.W, padx=checkbox_offset)
     nb.Label(frame, text="", pady=10).grid()
+    
+
+    import massacre.integrations.main
+    massacre.integrations.main.notify_about_settings(frame)
+    
+    
     nb.Label(frame, text="Made by CMDR WDX").grid(sticky=tk.W, padx=checkbox_offset)
     HyperlinkLabel(frame, text="Github", background=nb.Label().cget("background"), url=download_url, underline=True)\
         .grid(columnspan=2, sticky=tk.W, padx=checkbox_offset)
+
+    
 
     return frame
