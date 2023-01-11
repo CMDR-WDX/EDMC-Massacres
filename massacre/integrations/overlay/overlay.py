@@ -58,7 +58,7 @@ def _display_waiting_for_missions():
 class Overlay:
     def _create_overlay(self):
         self.__overlay = None
-        if self.__config.use_overlay:
+        if self.__config.overlay_enabled:
             try:
                 import edmcoverlay # pyright: ignore
                 self.__overlay = edmcoverlay.Overlay()
@@ -107,7 +107,7 @@ class Overlay:
                                         'green',
                                         0,
                                         line_y,
-                                        ttl=self.__config.ttl)
+                                        ttl=self.__config.overlay_ttl)
             line_y+=20
         
         logger.info("Overlay Update done")

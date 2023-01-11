@@ -2,7 +2,8 @@ from typing import Optional
 from massacre import massacre_settings, ui
 from massacre.integrations.integration import Integration
 from massacre.integrations.overlay.overlay import Overlay
-from massacre.massacre_mission_state import massacre_mission_listeners 
+from massacre.massacre_mission_state import massacre_mission_listeners
+from massacre.logger_factory import logger
 import tkinter as tk
 import myNotebook as nb
 
@@ -62,13 +63,15 @@ class OverlayIntegration(Integration):
             import edmcoverlay # pyright: ignore
             # Intentionally unused
             # Throws Error if edmcoverlay cannot be found
+            logger.info("edmcoverlay Python-Module found")
             return True
         except:
+            logger.info("edmcoverlay Python-Module missing")
             return "edmcoverlay Python-Module missing"
 
 
     def notify_initialize(self):
-        if not self.__config.overlay_enabled and self.__overlay is not None:
+        if self.__config.overlay_enabled and self.__overlay is None:
             self.__overlay = Overlay(self.__config)
 
             def handle_new_massacre_mission_state(data: dict[int, ui.MassacreMission]):
