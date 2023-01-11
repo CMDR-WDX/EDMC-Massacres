@@ -65,9 +65,9 @@ massacre_mission_listeners: list[Callable[[dict[int, MassacreMission]], None]] =
 _massacre_mission_store: dict[int, MassacreMission] = {}
 
 
-def __is_mission_a_massacre_mission(name: str) -> bool:
+def __is_mission_a_massacre_mission(name: str, target_type: str) -> bool:
     """This is the filter-Function defining if a Mission is considered a Massacre-Mission"""
-    return name.startswith("Mission_Massacre") and "OnFoot" not in name
+    return name.startswith("Mission_Massacre") and "OnFoot" not in name and target_type
 
 
 def __handle_new_missions_state(data: dict[int, dict]):
@@ -81,7 +81,7 @@ def __handle_new_missions_state(data: dict[int, dict]):
     logger.info(f"Received a new Missions State with {len(data)} Missions.")
     relevant_mission_events = []
     for mission in data.values():
-        if __is_mission_a_massacre_mission(mission["Name"]):
+        if __is_mission_a_massacre_mission(mission["Name"], mission.get('TargetType', None)):
             relevant_mission_events.append(mission)
     logger.info(f"{len(relevant_mission_events)} of found Missions are Massacre Missions")
     relevant_missions = map(__build_from_event, relevant_mission_events)
