@@ -10,12 +10,17 @@ from massacre.logger_factory import logger
 from massacre.massacre_settings import configuration, build_settings_ui, push_new_changes
 from massacre.version_check import build_worker
 
+import massacre.integrations.main as integrations
+
 plugin_name = os.path.basename(os.path.dirname(__file__))
 selected_cmdr: Optional[str] = None
 
 
 def plugin_app(parent: tkinter.Frame) -> tkinter.Frame:
     ui.set_frame(parent)
+    # Init Any Integration here
+    integrations.get_all_active()
+
     return parent
 
 
@@ -65,6 +70,14 @@ def journal_entry(cmdr: str, _is_beta: bool, _system: str,
         from massacre.mission_repository import mission_repository
         if mission_repository is not None:
             mission_repository.notify_about_mission_gone(mission_uuid)
+
+    # Pass through the Event to any Integration that needs it
+    for integration in integrations.get_all_active():
+        try:
+           integration.notify_new_event(entry)
+        except Exception as e:
+            logger.exception(e)
+    
 
 
 def plugin_prefs(parent: Any, _cmdr: str, _is_beta: bool):

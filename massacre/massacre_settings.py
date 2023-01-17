@@ -4,14 +4,14 @@ A wrapper around EDMCs Configuration
 import os
 from massacre.logger_factory import logger
 from massacre.version_check import download_url
-from typing import Callable
+from typing import Callable, Optional
 from config import config
 import tkinter as tk
-from tkinter import ttk
 from ttkHyperlinkLabel import HyperlinkLabel
 # noinspection PyPep8Naming
 import myNotebook as nb
 
+plugin_name = os.path.basename(os.path.dirname(__file__))
 
 class Configuration:
     """
@@ -62,10 +62,11 @@ class Configuration:
     @display_first_user_help.setter
     def display_first_user_help(self, value: bool):
         config.set(f"{self.plugin_name}.display_first_user_help", value)
-
-    def __init__(self):
-        self.plugin_name = os.path.basename(os.path.dirname(__file__))
-        self.config_changed_listeners: list[Callable[[Configuration], None]] = []
+    
+    #######################################
+    def __init__(self, plugin_name: str):
+       self.plugin_name = plugin_name
+       self.config_changed_listeners: list[Callable[[Configuration], None]] = []
 
     def notify_about_changes(self, data: dict[str, tk.Variable]):
         keys = data.keys()
@@ -78,12 +79,16 @@ class Configuration:
             self.display_sum_row = data["display_sum_row"].get()
         if "display_ratio_and_cr_per_kill_row" in keys:
             self.display_ratio_and_cr_per_kill_row = data["display_ratio_and_cr_per_kill_row"].get()
+        if "overlay_enabled" in keys:
+            self.overlay_enabled = data["overlay_enabled"].get()
+        if "overlay_ttl" in keys:
+            self.overlay_ttl = data['overlay_ttl'].get()
 
         for listener in self.config_changed_listeners:
             listener(self)
         
 
-configuration = Configuration()
+configuration = Configuration(plugin_name)
 
 
 __setting_changes: dict[str, tk.Variable] = {}
@@ -95,6 +100,9 @@ this dict are then applied to the config.
 
 def push_new_changes():
     """Callback to be used when the user has closed the Settings. This applies changes to the Config."""
+    import massacre.integrations.main
+    massacre.integrations.main.notify_about_settings_finished()
+    
     configuration.notify_about_changes(__setting_changes)
     __setting_changes.clear()
 
@@ -129,13 +137,21 @@ def build_settings_ui(root: nb.Notebook) -> tk.Frame:
     ]
     for entry in ui_settings_checkboxes:
         entry.grid(columnspan=2, padx=checkbox_offset, sticky=tk.W)
-
+ 
     nb.Label(frame, text="Other", pady=10, padx=title_offset).grid(sticky=tk.W)
     nb.Checkbutton(frame, text="Check for Updates on Start", variable=__setting_changes["check_updates"])\
         .grid(columnspan=2, sticky=tk.W, padx=checkbox_offset)
     nb.Label(frame, text="", pady=10).grid()
+    
+
+    import massacre.integrations.main
+    massacre.integrations.main.notify_about_settings(frame)
+    
+    
     nb.Label(frame, text="Made by CMDR WDX").grid(sticky=tk.W, padx=checkbox_offset)
     HyperlinkLabel(frame, text="Github", background=nb.Label().cget("background"), url=download_url, underline=True)\
         .grid(columnspan=2, sticky=tk.W, padx=checkbox_offset)
+
+    
 
     return frame
