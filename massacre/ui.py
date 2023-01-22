@@ -304,8 +304,15 @@ class UI:
         self.update_ui()
 
     def set_frame(self, frame: tk.Frame):
+        # New EDMC Update seems to break frame.grid_size. It returned 0 for EDMC-PVPBot (where I reused the code from here)
+        # So it will probably also return 0 here. Someone on the latest version should maybe check it.
+        
+        # Check if it is 0 and set it to 1. Should probably look into this further at some point.
+        cspan = frame.grid_size()[1]
+        if cspan < 1:
+            cspan = 1
         self.__frame = tk.Frame(frame)
-        self.__frame.grid(column=0, columnspan=frame.grid_size()[1], sticky=tk.W)
+        self.__frame.grid(column=0, columnspan=cspan, sticky=tk.W)
         self.__frame.bind("<<Refresh>>", lambda _: self.update_ui())
         self.update_ui()
 

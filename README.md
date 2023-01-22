@@ -51,3 +51,11 @@ Because EDMC does not keep track of Missions the plugin will read through the la
 and collect all Mission-Events.
 
 Also, when doing an Update-Check the `version`-File is read.
+
+
+## Integrations
+This plugins features integrations. You can think of them as Plugins for this Plugin.
+
+### edmcoverlay (Linux)
+This integration add the option to send data to edmcoverlay. When you pick up new missions you will get the current stack as an overlay.
+Thank you @pan-mroku for the Pull Request.

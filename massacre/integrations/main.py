@@ -6,10 +6,9 @@ from typing import Optional
 from massacre.integrations.integration import Integration
 import myNotebook as nb
 
-from massacre.integrations.example import ExampleIntegration
 from massacre.integrations.overlay.integration import OverlayIntegration
 
-__INTEGRATION_CONSTRUCTORS = [ExampleIntegration, OverlayIntegration]
+__INTEGRATION_CONSTRUCTORS = [OverlayIntegration]
 """
 Put all Integration Classes in here
 """
