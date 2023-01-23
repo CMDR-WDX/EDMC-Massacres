@@ -54,8 +54,9 @@ Also, when doing an Update-Check the `version`-File is read.
 
 
 ## Integrations
-This plugins features integrations. You can think of them as Plugins for this Plugin.
+This plugin features integrations. You can think of them as Plugins for this Plugin.
+Pull Requests are welcome for new integrations. Create an Issue if you have any questions :)
 
 ### edmcoverlay (Linux)
-This integration add the option to send data to edmcoverlay. When you pick up new missions you will get the current stack as an overlay.
-Thank you @pan-mroku for the Pull Request.
+This integration adds the option to send data to the Linux Implementation of edmcoverlay. When you pick up new missions you will get the current stack as an overlay.
+Thank you [@pan-mroku](https://github.com/pan-mroku) for the Pull Request.
