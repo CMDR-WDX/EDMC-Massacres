@@ -64,6 +64,15 @@ class Configuration:
         config.set(f"{self.plugin_name}.display_first_user_help", value)
     
     #######################################
+    @property
+    def display_mission_count(self):
+        return config.get_bool(f"{self.plugin_name}.display_mission_count", default=True)
+    
+    @display_mission_count.setter
+    def display_mission_count(self, value: bool):
+        config.set(f"{self.plugin_name}.display_mission_count", value)
+
+    #######################################
     def __init__(self, plugin_name: str):
        self.plugin_name = plugin_name
        self.config_changed_listeners: list[Callable[[Configuration], None]] = []
@@ -83,6 +92,8 @@ class Configuration:
             self.overlay_enabled = data["overlay_enabled"].get()
         if "overlay_ttl" in keys:
             self.overlay_ttl = data['overlay_ttl'].get()
+        if "display_mission_count" in keys:
+            self.display_mission_count = data['display_mission_count'].get()
 
         for listener in self.config_changed_listeners:
             listener(self)
@@ -125,6 +136,9 @@ def build_settings_ui(root: nb.Notebook) -> tk.Frame:
         tk.IntVar(value=configuration.display_sum_row)
     __setting_changes["display_ratio_and_cr_per_kill_row"] = \
         tk.IntVar(value=configuration.display_ratio_and_cr_per_kill_row)
+    __setting_changes["display_mission_count"] = \
+        tk.IntVar(value=configuration.display_mission_count)
+
 
     nb.Label(frame, text="UI Settings", pady=10).grid(sticky=tk.W, padx=title_offset)
     ui_settings_checkboxes = [
@@ -133,7 +147,9 @@ def build_settings_ui(root: nb.Notebook) -> tk.Frame:
         nb.Checkbutton(frame, text="Display Sum-Row",
                        variable=__setting_changes["display_sum_row"]),
         nb.Checkbutton(frame, text="Display Summary-Row",
-                       variable=__setting_changes["display_ratio_and_cr_per_kill_row"])
+                       variable=__setting_changes["display_ratio_and_cr_per_kill_row"]),
+        nb.Checkbutton(frame, text="Display Mission Count",
+                        variable=__setting_changes["display_mission_count"])
     ]
     for entry in ui_settings_checkboxes:
         entry.grid(columnspan=2, padx=checkbox_offset, sticky=tk.W)
