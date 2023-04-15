@@ -78,6 +78,10 @@ class MassacreMissionData:
         """
         How much the player should expect in Wing-Missions
         """
+        self.mission_count = len(massacre_state.values())
+        """
+        How many (massacre) missions does the user currently have.
+        """
 
         for mission in massacre_state.values():
             mission_giver = mission.source_faction
@@ -143,6 +147,7 @@ class GridUiSettings:
         self.sum = config.display_delta_column
         self.delta = config.display_delta_column
         self.summary = config.display_ratio_and_cr_per_kill_row
+        self.mission_count = config.display_mission_count
 
 
 def __get_row_width(settings: GridUiSettings) -> int:
@@ -263,14 +268,22 @@ def _display_data(frame: tk.Frame, data: MassacreMissionData, settings: GridUiSe
     if settings.summary:
         __display_summary(frame, data, settings, row_pointer)
         row_pointer += 1
-
     full_width = __get_row_width(settings)
+    if settings.mission_count:
+        __display_mission_count(frame, data, full_width, row_pointer)
+        row_pointer += 1
+
     for warning in data.warnings:
         __display_warning(frame, warning, full_width, row_pointer)
         row_pointer += 1
 
     return row_pointer
 
+
+def __display_mission_count(frame: tk.Frame, data: MassacreMissionData, width: int, row: int):
+    label = tk.Label(frame, text=f"Mission Count: {data.mission_count}/20")
+    label.config(fg="white")
+    label.grid(column=0, columnspan=width, row=row, sticky=tk.W)
 
 def _display_outdated_version(frame: tk.Frame, settings: GridUiSettings, row: int) -> int:
     sub_frame = tk.Frame(frame)
