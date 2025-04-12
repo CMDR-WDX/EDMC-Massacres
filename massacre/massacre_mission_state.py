@@ -20,7 +20,7 @@ class MassacreMission:
     target_type: str
     source_faction: str
     is_wing: bool
-    is_completed:bool # 增加完成标识
+    is_completed:bool # Add completion marker
     id: int
 
     def as_dict(self):
@@ -50,7 +50,7 @@ def __build_from_event(event: dict) -> MassacreMission:
     source_faction: str = event["Faction"]
     mission_id: int = event["MissionID"]
     wing: bool = event["Wing"]
-    completed: bool = event.get("is_completed", False)  # 获取可能存在的完成标识
+    completed: bool = event.get("is_completed", False)  # Retrieve possible existing completion markers
     return MassacreMission(
             target_faction, 
             count, 

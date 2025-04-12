@@ -76,14 +76,12 @@ def get_missions_for_all_cmdrs(timestamp: dt.date) -> dict[str, dict[int, dict]]
                         elif line_as_json["event"] == "MissionRedirected":
                             mission_id = line_as_json["MissionID"]
                             """
-                            此处是处理日志文件中
-                            的MissionRedirected的json固定格式为"event":"MissionRedirected", "MissionID":[唯一任务id], "Name":"Mission_Massacre", "LocalisedName":"[派系名称]", "NewDestinationStation":"[新目标站点名称]", "NewDestinationSystem":"[新目标星系名称]", "OldDestinationStation":"", "OldDestinationSystem":"[旧目标星系名称]"
-                            针对屠杀任务基本上固定返回格式,只需检测MissionID是否在原先的任务列表中即可将其视为完成.
+                            This section processes the MissionRedirected event in log files.
+                            For massacre missions, the format is consistent. Simply check if the MissionID exists in the original mission list to confirm completion.
                             """
                             if mission_id in current_dict:
-                                # 任务目标完成
-                                #logger.info("has_completed?: %s",current_dict[mission_id])
-                                current_dict[mission_id]["is_completed"] = True # 标识已完成
+                                # missions completed
+                                current_dict[mission_id]["is_completed"] = True
                 except Exception:
                     logger.warning("An error occurred, skipping line.")
                 finally:

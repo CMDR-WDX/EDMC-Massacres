@@ -52,7 +52,7 @@ def plugin_start3(_: str) -> str:
 
 def journal_entry(cmdr: str, _is_beta: bool, _system: str,
                   _station: str, entry: dict[str, Any], _state: dict[str, Any]):
-    if entry["event"] == "Missions": # 获取任务id?
+    if entry["event"] == "Missions":
         # Fetch the currently active missions and pass them to the Mission Registry
         active_mission_uuids = map(lambda x: int(x["MissionID"]), entry["Active"])
         from massacre.mission_repository import set_active_uuids
@@ -65,7 +65,7 @@ def journal_entry(cmdr: str, _is_beta: bool, _system: str,
             mission_repository.notify_about_new_mission_accepted(entry, cmdr)
 
     elif entry["event"] == "MissionRedirected":
-        #增加任务目标完成的处理，此处是处理“事件”
+        # Add handling for mission objective completion; this section processes "events."
         mission_uuid = entry["MissionID"]
         from massacre.mission_repository import mission_repository
         if mission_repository is not None:
