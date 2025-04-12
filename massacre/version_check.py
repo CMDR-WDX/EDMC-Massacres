@@ -11,8 +11,8 @@ from massacre.logger_factory import logger
 from pathlib import Path
 from typing import Callable
 
-_version_url = "https://raw.githubusercontent.com/ckx000/EDMC-Massacres/master/version"
-download_url = "https://github.com/ckx000/EDMC-Massacres/releases"
+_version_url = "https://raw.githubusercontent.com/CMDR-WDX/EDMC-Massacres/master/version"
+download_url = "https://github.com/CMDR-WDX/EDMC-Massacres/releases"
 
 
 def __is_current_version_outdated(current_version: str, callback: Callable[[bool], None]) -> None:

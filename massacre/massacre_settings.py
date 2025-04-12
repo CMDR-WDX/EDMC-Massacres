@@ -167,7 +167,7 @@ def build_settings_ui(root: nb.Notebook) -> tk.Frame:
     massacre.integrations.main.notify_about_settings(frame)
     
     
-    nb.Label(frame, text="Made by CMDR WDX \nFixby CMDR CKX").grid(sticky=tk.W, padx=checkbox_offset)
+    nb.Label(frame, text="Made by CMDR WDX").grid(sticky=tk.W, padx=checkbox_offset)
     HyperlinkLabel(frame, text="Github", background=nb.Label().cget("background"), url=download_url, underline=True)\
         .grid(columnspan=2, sticky=tk.W, padx=checkbox_offset)
 
