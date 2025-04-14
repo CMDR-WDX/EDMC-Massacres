@@ -7,9 +7,8 @@
 如果您是初次接触清缴堆叠，可以阅读[这篇文章](https://tieba.baidu.com/p/9327050589).
 
 <p align="center">
-    <img src="./readme-src/example_screenshot.png" alt="An example screenshot"/>
+    <img src="./readme-src/example_screenshot_cn.png" alt="An example screenshot"/>
     <br>
-    图片待更新
 </p>
 
 ## 用法
@@ -25,9 +24,8 @@
 下面你可以看到关于表格的解释：
 
 <p align="center">
-    <img src="./readme-src/main_table_explanations.png" alt="Main Table Explained"/>
+    <img src="./readme-src/main_table_explanations_cn.png" alt="Main Table Explained"/>
     <br>
-    图片待更新
 </p>
 
 1. 这些是任务发布者,显示为各个派系<br>

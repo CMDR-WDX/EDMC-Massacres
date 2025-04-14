@@ -10,7 +10,6 @@ If you are new to Massacre Stacking, you could take a look at [this article](htt
 <p align="center">
     <img src="./readme-src/example_screenshot.png" alt="An example screenshot"/>
     <br>
-    Image pending update
 </p>
 
 ## Usage
@@ -29,7 +28,6 @@ Below you can see the main table's explanation:
 <p align="center">
     <img src="./readme-src/main_table_explanations.png" alt="Main Table Explained"/>
     <br>
-    Image pending update
 </p>
 
 1. These are the mission givers
