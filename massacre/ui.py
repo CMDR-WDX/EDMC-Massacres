@@ -23,10 +23,10 @@ class MassacreMissionData:
     @dataclass
     class FactionState:
         
-        allnum: int # Add the number of missions for this faction.
-        cmpnum: int # Number of completed missions for this faction
-        killcmpcount: int # Number of completed kills for this faction
-        killcount: int
+        all_mission_count: int # Add the number of missions for this faction.
+        completed_mission_count: int # Number of completed missions for this faction
+        completed_kill_count: int # Number of completed kills for this faction
+        kill_count: int
         reward: int 
         shareable_reward: int
 
@@ -90,10 +90,10 @@ class MassacreMissionData:
         """
         How many (massacre) missions does the user currently have.
         """
-        self.cmpmission_count = 0 # Add the total number of completed missions.
-        self.cmpreward = 0 # Add the total rewards from completed missions.
-        self.cmpshareable_reward = 0 # Add the total wing mission rewards from completed missions.
-        self.killcmpcount = 0 # Add the total completed kills.
+        self.completed_mission_count = 0 # Add the total number of completed missions.
+        self.completed_reward = 0 # Add the total rewards from completed missions.
+        self.completed_shareable_reward = 0 # Add the total wing mission rewards from completed missions.
+        self.completed_kill_count = 0 # Add the total completed kills.
 
         for mission in massacre_state.values():
             mission_giver = mission.source_faction
@@ -109,13 +109,13 @@ class MassacreMissionData:
             from previous Missions from that faction, or 0,0,0 if this is the first mission.
             """
             
-            faction_state.allnum += 1 # Add a count for the number of missions from this faction
+            faction_state.all_mission_count += 1 # Add a count for the number of missions from this faction
             if mission.is_completed: 
-                faction_state.cmpnum += 1 # Accumulate the count of completed missions.
-                faction_state.killcmpcount += mission.count # Accumulate the count of completed kills.
-                self.cmpreward += mission.reward # Add rewards from completed missions to the total.
+                faction_state.completed_mission_count += 1 # Accumulate the count of completed missions.
+                faction_state.completed_kill_count += mission.count # Accumulate the count of completed kills.
+                self.completed_reward += mission.reward # Add rewards from completed missions to the total.
                 if mission.is_wing: # Add rewards from completed wing missions to the total.
-                    self.cmpshareable_reward += mission.reward
+                    self.completed_shareable_reward += mission.reward
 
             faction_state.killcount += mission.count
             self.target_sum += mission.count 
@@ -143,10 +143,10 @@ class MassacreMissionData:
         for faction_state in self.faction_to_count_lookup.values():
             self.reward += faction_state.reward
             self.shareable_reward += faction_state.shareable_reward
-            self.cmpmission_count += faction_state.cmpnum # Total count of all completed missions (aggregated per faction).
+            self.completed_mission_count += faction_state.completed_mission_count # Total count of all completed missions (aggregated per faction).
             # Loop through each faction to find the largest total kills count and use it as the aggregated kill count for all missions
-            if faction_state.killcmpcount > self.killcmpcount:
-                self.killcmpcount = faction_state.killcmpcount
+            if faction_state.completed_kill_count > self.completed_kill_count:
+                self.completed_kill_count = faction_state.completed_kill_count
 
         # Check for Warnings
         if len(target_factions) > 1:
@@ -208,11 +208,11 @@ def __display_data_header(frame: tk.Frame, settings: GridUiSettings, row=0):
     frame.grid_columnconfigure(0,minsize=120, weight=1) 
     # todo Check if a toggle button can be inserted here after the faction name.
     faction_label = tk.Label(frame, text=_("Faction"))
-    missionnum_label = tk.Label(frame, text=_("R/T")) # Add the number of missions.
+    mission_num_label = tk.Label(frame, text=_("R/T")) # Add the number of missions.
     kills_label = tk.Label(frame, text=_("KRM/REQ"))
     payout_label = tk.Label(frame, text=_("Reward (Wing)"))
 
-    ui_elements = [faction_label, missionnum_label, kills_label, payout_label]
+    ui_elements = [faction_label, mission_num_label, kills_label, payout_label]
     if settings.delta:
         # noinspection SpellCheckingInspection
         delta_label = tk.Label(frame, text=_("Δmax"))
@@ -231,13 +231,13 @@ def __display_row(frame: tk.Frame, faction: str, data: MassacreMissionData.Facti
     shareable_reward_str = "{:.1f}".format(float(data.shareable_reward) / 1_000_000)
 
     faction_label = tk.Label(frame, text=faction)
-    cmpnum_sum = int(data.allnum) - int(data.cmpnum)
-    missionnum_label = tk.Label(frame, text=f"{cmpnum_sum}/{data.allnum}") # Add the number of missions.
-    killscmp_sum =int(data.killcount) - int(data.killcmpcount)
-    kills_label = tk.Label(frame, text=f"{killscmp_sum}/{data.killcount}") # Modify the kill count display
+    completed_mission_count_sum = int(data.all_mission_count) - int(data.completed_mission_count)
+    mission_num_label = tk.Label(frame, text=f"{completed_mission_count_sum}/{data.all_mission_count}") # Add the number of missions.
+    completed_kill_sum =int(data.killcount) - int(data.completed_kill_count)
+    kills_label = tk.Label(frame, text=f"{completed_kill_sum}/{data.killcount}") # Modify the kill count display
     payout_label = tk.Label(frame, text=f"{reward_str} ({shareable_reward_str})")
 
-    ui_elements = [faction_label, missionnum_label, kills_label, payout_label]
+    ui_elements = [faction_label, mission_num_label, kills_label, payout_label]
     sticky_settings = [tk.W, tk.W, tk.W+tk.E , tk.W, tk.E] # Considering delta, define one more.
     if settings.delta: 
         # Calculate difference
@@ -256,27 +256,28 @@ def __display_cmpsum(frame: tk.Frame, data: MassacreMissionData, _settings: Grid
     """
     label = tk.Label(frame, text=_("CompletedSum"))
     
-    cmp_num = tk.Label(frame, text=data.cmpmission_count) # Number of completed missions.
-    kill_sum = tk.Label(frame, text=data.killcmpcount) # Number of kills completed in missions.
-    reward_sum_normal = "{:.1f}".format(float(data.cmpreward) / 1_000_000)
-    reward_sum_wing = "{:.1f}".format(float(data.cmpshareable_reward) / 1_000_000)
+    completed_num = tk.Label(frame, text=data.completed_mission_count) # Number of completed missions.
+    kill_sum = tk.Label(frame, text=data.completed_kill_count) # Number of kills completed in missions.
+    reward_sum_normal = "{:.1f}".format(float(data.completed_reward) / 1_000_000)
+    reward_sum_wing = "{:.1f}".format(float(data.completed_shareable_reward) / 1_000_000)
     reward_sum = tk.Label(frame, text=f"{reward_sum_normal} ({reward_sum_wing})")
-    for i, entry in enumerate([label, cmp_num, kill_sum, reward_sum]):
+    sticky_settings = [tk.W, tk.E, tk.E, tk.E]
+    for i, entry in enumerate([label, completed_num, kill_sum, reward_sum]):
         entry.config(fg="YellowGreen")
-        entry.grid(row=row, column=i, sticky=tk.W)
+        entry.grid(row=row, column=i, sticky=sticky_settings[i])
 
 def __display_sum(frame: tk.Frame, data: MassacreMissionData, _settings: GridUiSettings, row: int):
     """
     Display the Sum-Row containing the Reward-Sum and the amount of Kills required.
     """
     label = tk.Label(frame, text=_("AcceptedSum"))
-    allmissionnum = tk.Label(frame, text=data.mission_count)
+    all_missions_num = tk.Label(frame, text=data.mission_count)
     kill_sum = tk.Label(frame, text=data.stack_height)
     reward_sum_normal = "{:.1f}".format(float(data.reward) / 1_000_000)
     reward_sum_wing = "{:.1f}".format(float(data.shareable_reward) / 1_000_000)
     reward_sum = tk.Label(frame, text=f"{reward_sum_normal} ({reward_sum_wing})")
     sticky_settings = [tk.W, tk.E, tk.E, tk.E]
-    for i, entry in enumerate([label, allmissionnum, kill_sum, reward_sum]):
+    for i, entry in enumerate([label, all_missions_num, kill_sum, reward_sum]):
         entry.config(fg="green")
         entry.grid(row=row, column=i, sticky=sticky_settings[i])
 
@@ -375,7 +376,7 @@ class UI:
         if cspan < 1:
             cspan = 2
         self.__frame = tk.Frame(frame)
-        #self.__frame.config(bg="red") # debug
+        #self.__frame.config(bg="red") # debug Test layout display.
         self.__frame.grid(column=0, columnspan=cspan, sticky=tk.W)
         self.__frame.bind("<<Refresh>>", lambda _: self.update_ui())
         self.update_ui()
