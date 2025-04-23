@@ -1,0 +1,58 @@
+/* Language name */
+"!Language" = "简体中文";
+
+"Multiple Target Factions" = "多目标派系";
+
+"Multiple Target Types" = "多目标类型";
+
+"Multiple Target Systems" = "多目标星系";
+
+"Missing Active Mission Data" = "未获取到任务数据";
+
+"If you are in game, go to main menu and come back" = "如果你正在游戏,请小退到主菜单再进入";
+
+"Faction" = "任务派系";
+
+"R/T" = "R/T";
+
+"KRM/REQ" = "余/总需";
+
+"Reward (Wing)" = "奖励(可共享)";
+
+"Δmax" = "Δ差值";
+
+"CompletedSum" = "已完成合计";
+
+"AcceptedSum" = "已接任务合计";
+
+"Ratio" = "效率";
+
+"Reward" = "奖励";
+
+"M CR/Kill." = "百万 CR/每击杀. 总";
+
+"Kills" = "个任务目标数";
+
+"Mission Count" = "已接任务数量";
+
+"Massacre Plugin is Outdated" = "屠杀插件已有更新";
+
+"Go to Download" = "去下载";
+
+"Dismiss" = "拒绝";
+
+"Massacre Plugin is ready." = "清缴插件已就绪";
+
+"UI Settings" = "UI面板设定";
+
+"Display Delta-Column" = "显示最高值差值";
+
+"Display Sum-Row" = "显示合计行";
+
+"Display Summary-Row" = "显示效率信息行";
+
+"Display Mission Count" = "显示任务数量";
+
+"Other" = "其他";
+
+"Check for Updates on Start" = "启动时检查更新";

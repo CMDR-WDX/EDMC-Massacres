@@ -78,7 +78,7 @@ class MissionRepository:
         if self._state & MissionRepoState.HAS_MISSIONS_EVENT == 0:
             self._state |= MissionRepoState.HAS_MISSIONS_EVENT
         else:
-            logger.warning("Mission UUIDs were passed even though the State is already initialized")
+            logger.warning("Mission UUIDs were passed even though the State is already initialized. CMDR: "+cmdr+"  UUIDs: %s", repr(uuids))
             pass
 
         self._active_missions = {}
@@ -88,7 +88,7 @@ class MissionRepository:
             if uuid in all_known_uuids:
                 self._active_missions[uuid] = self._mission_store[cmdr][uuid]
             else:
-                logger.warning("A Mission could not be found in the Store even though the UUID is present")
+                logger.warning("A Mission could not be found in the Store even though the UUID is present. UUID: %s  all_known_uuids: %s", uuid, all_known_uuids)
                 pass
 
         #  Emit an Event notifying that the pool of active missions has changed
@@ -109,6 +109,13 @@ class MissionRepository:
         global active_missions_changed_event_listeners
         for listener in active_missions_changed_event_listeners:
             listener(self._active_missions)
+
+    def notify_complete_mission_gone(self, mission_uuid: int):
+        # Add a completed mission objective and mark it
+        logger.info(f"Mission with ID {mission_uuid} has been Complete")
+        # Mark as completed
+        self._active_missions[mission_uuid]["is_completed"] = True
+        self.update_all_listeners()
 
     def update_all_listeners(self):
         global active_missions_changed_event_listeners, all_missions_changed_event_listeners

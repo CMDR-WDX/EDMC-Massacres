@@ -64,7 +64,14 @@ def journal_entry(cmdr: str, _is_beta: bool, _system: str,
         if mission_repository is not None:
             mission_repository.notify_about_new_mission_accepted(entry, cmdr)
 
-    elif entry["event"] in ["MissionAbandoned", "MissionCompleted"]:  # TODO: What about MissionRedirected?
+    elif entry["event"] == "MissionRedirected":
+        # Add handling for mission objective completion; this section processes "events."
+        mission_uuid = entry["MissionID"]
+        from massacre.mission_repository import mission_repository
+        if mission_repository is not None:
+            mission_repository.notify_complete_mission_gone(mission_uuid)
+
+    elif entry["event"] in ["MissionAbandoned", "MissionCompleted"]:
         # Mission has been completed or failed -> It is no longer active
         mission_uuid = entry["MissionID"]
         from massacre.mission_repository import mission_repository
@@ -74,10 +81,9 @@ def journal_entry(cmdr: str, _is_beta: bool, _system: str,
     # Pass through the Event to any Integration that needs it
     for integration in integrations.get_all_active():
         try:
-           integration.notify_new_event(entry)
+            integration.notify_new_event(entry)
         except Exception as e:
             logger.exception(e)
-    
 
 
 def plugin_prefs(parent: Any, _cmdr: str, _is_beta: bool):

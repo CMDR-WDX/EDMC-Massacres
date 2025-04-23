@@ -2,6 +2,8 @@
 A wrapper around EDMCs Configuration
 """
 import os
+import l10n
+import functools
 from massacre.logger_factory import logger
 from massacre.version_check import download_url
 from typing import Callable, Optional
@@ -11,6 +13,7 @@ from ttkHyperlinkLabel import HyperlinkLabel
 # noinspection PyPep8Naming
 import myNotebook as nb
 
+_ = functools.partial(l10n.Translations.translate, context=__file__)
 plugin_name = os.path.basename(os.path.dirname(__file__))
 
 class Configuration:
@@ -140,22 +143,22 @@ def build_settings_ui(root: nb.Notebook) -> tk.Frame:
         tk.IntVar(value=configuration.display_mission_count)
 
 
-    nb.Label(frame, text="UI Settings", pady=10).grid(sticky=tk.W, padx=title_offset)
+    nb.Label(frame, text=_("UI Settings"), pady=10).grid(sticky=tk.W, padx=title_offset)
     ui_settings_checkboxes = [
-        nb.Checkbutton(frame, text="Display Delta-Column",
+        nb.Checkbutton(frame, text=_("Display Delta-Column"),
                        variable=__setting_changes["display_delta_column"]),
-        nb.Checkbutton(frame, text="Display Sum-Row",
+        nb.Checkbutton(frame, text=_("Display Sum-Row"),
                        variable=__setting_changes["display_sum_row"]),
-        nb.Checkbutton(frame, text="Display Summary-Row",
+        nb.Checkbutton(frame, text=_("Display Summary-Row"),
                        variable=__setting_changes["display_ratio_and_cr_per_kill_row"]),
-        nb.Checkbutton(frame, text="Display Mission Count",
+        nb.Checkbutton(frame, text=_("Display Mission Count"),
                         variable=__setting_changes["display_mission_count"])
     ]
     for entry in ui_settings_checkboxes:
         entry.grid(columnspan=2, padx=checkbox_offset, sticky=tk.W)
  
-    nb.Label(frame, text="Other", pady=10, padx=title_offset).grid(sticky=tk.W)
-    nb.Checkbutton(frame, text="Check for Updates on Start", variable=__setting_changes["check_updates"])\
+    nb.Label(frame, text=_("Other"), pady=10, padx=title_offset).grid(sticky=tk.W)
+    nb.Checkbutton(frame, text=_("Check for Updates on Start"), variable=__setting_changes["check_updates"])\
         .grid(columnspan=2, sticky=tk.W, padx=checkbox_offset)
     nb.Label(frame, text="", pady=10).grid()
     
