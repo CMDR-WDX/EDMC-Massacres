@@ -19,10 +19,10 @@ def __display_row(faction: str, data: MassacreMissionData.FactionState):
     """
     Draw one Data-Row for the Table
     """
-    reward_str = "{:.1f}".format(float(data.reward) / 1_000_000)
-    shareable_reward_str = "{:.1f}".format(float(data.shareable_reward) / 1_000_000)
+    reward_str = "{:.1f}".format(float(data.reward.total) / 1_000_000)
+    shareable_reward_str = "{:.1f}".format(float(data.shareable_reward.total) / 1_000_000)
     whole_reward_str = f'{reward_str} ({shareable_reward_str})'
-    overlay_elements = [f'{data.killcount:5}', f'{whole_reward_str:{len("Reward (Wing)")}}', f'{faction:15}']
+    overlay_elements = [f'{data.kills.total:5}', f'{whole_reward_str:{len("Reward (Wing)")}}', f'{faction:15}']
 
     return overlay_elements
 
@@ -71,7 +71,7 @@ class Overlay:
         self._create_overlay()
                 
     def __bool__(self):
-        return self.__overlay != None
+        return self.__overlay is not None
 
     def rebuild_settings(self):
         self._create_overlay()

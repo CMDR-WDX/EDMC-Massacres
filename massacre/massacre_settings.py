@@ -76,6 +76,21 @@ class Configuration:
         config.set(f"{self.plugin_name}.display_mission_count", value)
 
     #######################################
+    @property
+    def display_missions_column(self):
+        return config.get_bool(f"{self.plugin_name}.display_missions_column", default=False)
+
+    @display_missions_column.setter
+    def display_missions_column(self, value: bool):
+        config.set(f"{self.plugin_name}.display_missions_column", value)
+    #######################################
+    @property
+    def display_partial_stacks(self):
+        return config.get_bool(f"{self.plugin_name}.display_partial_stacks", default=False)
+    @display_partial_stacks.setter
+    def display_partial_stacks(self, value: bool):
+        config.set(f"{self.plugin_name}.display_partial_stacks", value)
+    #######################################
     def __init__(self, plugin_name: str):
        self.plugin_name = plugin_name
        self.config_changed_listeners: list[Callable[[Configuration], None]] = []
@@ -97,6 +112,10 @@ class Configuration:
             self.overlay_ttl = data['overlay_ttl'].get()
         if "display_mission_count" in keys:
             self.display_mission_count = data['display_mission_count'].get()
+        if "display_missions_column" in keys:
+            self.display_missions_column = data["display_missions_column"].get()
+        if "display_partial_stacks" in keys:
+            self.display_partial_stacks = data["display_partial_stacks"].get()
 
         for listener in self.config_changed_listeners:
             listener(self)
@@ -132,27 +151,33 @@ def build_settings_ui(root: nb.Notebook) -> tk.Frame:
     frame.columnconfigure(1, weight=1)
     __setting_changes.clear()
     __setting_changes["check_updates"] = \
-        tk.IntVar(value=configuration.check_updates)
+        tk.BooleanVar(value=configuration.check_updates)
     __setting_changes["display_delta_column"] = \
-        tk.IntVar(value=configuration.display_delta_column)
+        tk.BooleanVar(value=configuration.display_delta_column)
     __setting_changes["display_sum_row"] = \
-        tk.IntVar(value=configuration.display_sum_row)
+        tk.BooleanVar(value=configuration.display_sum_row)
     __setting_changes["display_ratio_and_cr_per_kill_row"] = \
-        tk.IntVar(value=configuration.display_ratio_and_cr_per_kill_row)
+        tk.BooleanVar(value=configuration.display_ratio_and_cr_per_kill_row)
     __setting_changes["display_mission_count"] = \
-        tk.IntVar(value=configuration.display_mission_count)
-
+        tk.BooleanVar(value=configuration.display_mission_count)
+    __setting_changes["display_partial_stacks"] = \
+        tk.BooleanVar(value=configuration.display_partial_stacks)
+    __setting_changes["display_missions_column"] = \
+        tk.BooleanVar(value=configuration.display_missions_column)
 
     nb.Label(frame, text=_("UI Settings"), pady=10).grid(sticky=tk.W, padx=title_offset)
     ui_settings_checkboxes = [
         nb.Checkbutton(frame, text=_("Display Delta-Column"),
                        variable=__setting_changes["display_delta_column"]),
+        nb.Checkbutton(frame, text=_("Display Mission Count Column"), variable=__setting_changes["display_missions_column"]),
         nb.Checkbutton(frame, text=_("Display Sum-Row"),
                        variable=__setting_changes["display_sum_row"]),
         nb.Checkbutton(frame, text=_("Display Summary-Row"),
                        variable=__setting_changes["display_ratio_and_cr_per_kill_row"]),
-        nb.Checkbutton(frame, text=_("Display Mission Count"),
-                        variable=__setting_changes["display_mission_count"])
+        nb.Checkbutton(frame, text=_("Display Mission Count Summary"),
+                        variable=__setting_changes["display_mission_count"]),
+        nb.Checkbutton(frame, text=_("Display kills/rewards for already completed completed missions"),
+                       variable=__setting_changes["display_partial_stacks"])
     ]
     for entry in ui_settings_checkboxes:
         entry.grid(columnspan=2, padx=checkbox_offset, sticky=tk.W)
@@ -167,8 +192,8 @@ def build_settings_ui(root: nb.Notebook) -> tk.Frame:
     massacre.integrations.main.notify_about_settings(frame)
     
     
-    nb.Label(frame, text="Made by CMDR WDX").grid(sticky=tk.W, padx=checkbox_offset)
-    HyperlinkLabel(frame, text="Github", background=nb.Label().cget("background"), url=download_url, underline=True)\
+    nb.Label(frame, text=f"{_("Made by")} CMDR WDX {_("and contributors")}").grid(sticky=tk.W, padx=checkbox_offset)
+    HyperlinkLabel(frame, text=_("Open Releases on Github"), background=nb.Label().cget("background"), url=download_url, underline=True)\
         .grid(columnspan=2, sticky=tk.W, padx=checkbox_offset)
 
     

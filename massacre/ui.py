@@ -4,6 +4,7 @@ import functools
 import tkinter as tk
 from typing import Optional
 from dataclasses import dataclass
+from enum import Enum
 
 import massacre.massacre_settings
 from massacre.massacre_mission_state import massacre_mission_listeners, MassacreMission
@@ -22,13 +23,63 @@ class MassacreMissionData:
 
     @dataclass
     class FactionState:
-        
-        all_mission_count: int # Add the number of missions for this faction.
-        completed_mission_count: int # Number of completed missions for this faction
-        completed_kill_count: int # Number of completed kills for this faction
-        kill_count: int
-        reward: int 
-        shareable_reward: int
+        @dataclass
+        class Entry:
+            total: int
+            completed: int
+            @property
+            def remaining(self):
+                return self.total - self.completed
+            @staticmethod
+            def default():
+                return MassacreMissionData.FactionState.Entry(0, 0)
+
+        missions: Entry
+        kills: Entry
+        reward: Entry
+        shareable_reward: Entry
+
+        @staticmethod
+        def default():
+            return MassacreMissionData.FactionState(
+                missions = MassacreMissionData.FactionState.Entry.default(),
+                kills = MassacreMissionData.FactionState.Entry.default(),
+                reward = MassacreMissionData.FactionState.Entry.default(),
+                shareable_reward = MassacreMissionData.FactionState.Entry.default(),
+            )
+
+    class ColumnType(Enum):
+        FACTION = 1
+        MISSIONS_OPT = 2
+        KILLS = 3
+        REWARD = 4
+        DELTA_OPT = 5
+
+        def get_alignment_head(self):
+            return self.get_alignment_body() # we might change this later. for now "inherit" this from the body
+
+        def get_alignment_body(self):
+            if self == MassacreMissionData.ColumnType.FACTION:
+                return tk.W
+            if self in [
+                MassacreMissionData.ColumnType.MISSIONS_OPT,
+                MassacreMissionData.ColumnType.KILLS,
+                MassacreMissionData.ColumnType.REWARD,
+                MassacreMissionData.ColumnType.DELTA_OPT,
+            ]:
+                return tk.E
+            logger.warning("unhandled Column: "+str(self))
+            return tk.W
+
+        def get_name(self):
+            lookup: dict[MassacreMissionData.ColumnType, str] = {
+                MassacreMissionData.ColumnType.FACTION: "Faction",
+                MassacreMissionData.ColumnType.MISSIONS_OPT: "Missions",
+                MassacreMissionData.ColumnType.KILLS: "Kills",
+                MassacreMissionData.ColumnType.REWARD: "Reward (Wing)",
+                MassacreMissionData.ColumnType.DELTA_OPT: "Δmax",
+            }
+            return lookup.get(self, "#MISSING COL DEF")
 
 
     def __init__(self, massacre_state: dict[int, MassacreMission]):
@@ -101,7 +152,7 @@ class MassacreMissionData:
 
             if mission_giver not in self.faction_to_count_lookup.keys():
                 """If no Mission from that Faction is known yet, it will first be initialized"""
-                self.faction_to_count_lookup[mission_giver] = MassacreMissionData.FactionState(0, 0, 0, 0, 0, 0)
+                self.faction_to_count_lookup[mission_giver] = MassacreMissionData.FactionState.default()
 
             faction_state = self.faction_to_count_lookup[mission_giver]
             """
@@ -109,20 +160,20 @@ class MassacreMissionData:
             from previous Missions from that faction, or 0,0,0 if this is the first mission.
             """
             
-            faction_state.all_mission_count += 1 # Add a count for the number of missions from this faction
+            faction_state.missions.total += 1 # Add a count for the number of missions from this faction
             if mission.is_completed: 
-                faction_state.completed_mission_count += 1 # Accumulate the count of completed missions.
-                faction_state.completed_kill_count += mission.count # Accumulate the count of completed kills.
+                faction_state.missions.completed += 1 # Accumulate the count of completed missions.
+                faction_state.kills.completed += mission.count # Accumulate the count of completed kills.
                 self.completed_reward += mission.reward # Add rewards from completed missions to the total.
                 if mission.is_wing: # Add rewards from completed wing missions to the total.
                     self.completed_shareable_reward += mission.reward
 
-            faction_state.killcount += mission.count
-            self.target_sum += mission.count 
-            faction_state.reward += mission.reward
+            faction_state.kills.total += mission.count
+            self.target_sum += mission.count
+            faction_state.reward.total += mission.reward
             # Only wing missions are considered for shareable rewards
             if mission.is_wing:
-                faction_state.shareable_reward += mission.reward
+                faction_state.shareable_reward.total += mission.reward
 
             ### Add Faction, Target Type and Target System to the list if they are not 
             ### yet present. This will be later used to generate a warning if more than 
@@ -136,17 +187,18 @@ class MassacreMissionData:
             if mission.target_system not in target_systems:
                 target_systems.append(mission.target_system)
 
-            if faction_state.killcount > self.stack_height:
-                self.stack_height = faction_state.killcount
+            if faction_state.kills.total > self.stack_height:
+                self.stack_height = faction_state.kills.total
 
         # After all Missions have been handled, iterate through the faction_to_count_lookup to calculate the Total Rewards   
         for faction_state in self.faction_to_count_lookup.values():
-            self.reward += faction_state.reward
-            self.shareable_reward += faction_state.shareable_reward
-            self.completed_mission_count += faction_state.completed_mission_count # Total count of all completed missions (aggregated per faction).
+            self.reward += faction_state.reward.total
+            self.shareable_reward += faction_state.shareable_reward.total
+            self.completed_mission_count += faction_state.missions.completed # Total count of all completed missions (aggregated per faction).
+            self.completed_shareable_reward += faction_state.shareable_reward.completed
             # Loop through each faction to find the largest total kills count and use it as the aggregated kill count for all missions
-            if faction_state.completed_kill_count > self.completed_kill_count:
-                self.completed_kill_count = faction_state.completed_kill_count
+            if faction_state.kills.completed > self.completed_kill_count:
+                self.completed_kill_count = faction_state.kills.completed
 
         # Check for Warnings
         if len(target_factions) > 1:
@@ -158,8 +210,8 @@ class MassacreMissionData:
 
         # Calculate before_stack_height
         for faction_state in self.faction_to_count_lookup.values():
-            if faction_state.killcount > self.before_stack_height and faction_state.killcount != self.stack_height:
-                self.before_stack_height = faction_state.killcount
+            if faction_state.kills.total > self.before_stack_height and faction_state.kills.total != self.stack_height:
+                self.before_stack_height = faction_state.kills.total
         if self.before_stack_height == 0:  # No other elements. All at max value.
             self.before_stack_height = self.stack_height
 
@@ -169,10 +221,22 @@ class GridUiSettings:
     Subset of the entire Configuration that focuses on which information is displayed
     """
     def __init__(self, config: Configuration):
-        self.sum = config.display_sum_row # fix error
-        self.delta = config.display_delta_column
-        self.summary = config.display_ratio_and_cr_per_kill_row
-        self.mission_count = config.display_mission_count
+        self.has_sum = config.display_sum_row # fix error
+        self.has_delta_col = config.display_delta_column
+        self.has_summary_row = config.display_ratio_and_cr_per_kill_row
+        self.has_mission_count_row = config.display_mission_count
+        self.has_missions_col = config.display_missions_column
+        self.display_partial_stacks = config.display_partial_stacks
+
+    def get_ordered_columns(self) -> list[MassacreMissionData.ColumnType]:
+        return [f for f in [
+            MassacreMissionData.ColumnType.FACTION,
+            MassacreMissionData.ColumnType.MISSIONS_OPT if self.has_missions_col else None,
+            MassacreMissionData.ColumnType.KILLS,
+            MassacreMissionData.ColumnType.REWARD,
+            MassacreMissionData.ColumnType.DELTA_OPT if self.has_delta_col else None,
+        ] if f is not None]
+
 
 
 def __get_row_width(settings: GridUiSettings) -> int:
@@ -180,10 +244,12 @@ def __get_row_width(settings: GridUiSettings) -> int:
     Return how many columns wide the Table is.
     This depends on if the delta-Column should be displayed
     """
-    if settings.delta:
-        return 5
-    return 4
-
+    col_count = 4
+    if settings.has_delta_col:
+        col_count += 1
+    if settings.has_missions_col:
+        col_count += 1
+    return col_count
 
 def _display_no_data_info(frame: tk.Frame):
     """
@@ -203,23 +269,16 @@ def __display_data_header(frame: tk.Frame, settings: GridUiSettings, row=0):
     """
     Display the Labels of the Table
     """
-    for col in range(3+ int(settings.delta)):  # Adjust the number of columns based on whether the delta column is include
-        frame.grid_columnconfigure(col,weight=0)
-    frame.grid_columnconfigure(0,minsize=120, weight=1) 
+    cols = settings.get_ordered_columns()
+    for idx, col in enumerate(cols):
+        weight = 0
+        if col == MassacreMissionData.ColumnType.FACTION:
+            weight = 1
+        frame.grid_columnconfigure(idx, weight=weight)
+        # TODO: Needed?
+        # frame.grid_columnconfigure(0, minsize=120, weight=1)
+        tk.Label(frame, text=_(col.get_name())).grid(row=row, column=idx, sticky=col.get_alignment_head())
     # todo Check if a toggle button can be inserted here after the faction name.
-    faction_label = tk.Label(frame, text=_("Faction"))
-    mission_num_label = tk.Label(frame, text=_("R/T")) # Add the number of missions.
-    kills_label = tk.Label(frame, text=_("KRM/REQ"))
-    payout_label = tk.Label(frame, text=_("Reward (Wing)"))
-
-    ui_elements = [faction_label, mission_num_label, kills_label, payout_label]
-    if settings.delta:
-        # noinspection SpellCheckingInspection
-        delta_label = tk.Label(frame, text=_("Δmax"))
-        ui_elements.append(delta_label)
-
-    for i, item in enumerate(ui_elements):
-        item.grid(row=row, column=i, sticky=tk.W)
 
 
 def __display_row(frame: tk.Frame, faction: str, data: MassacreMissionData.FactionState, max_count: int,
@@ -227,34 +286,58 @@ def __display_row(frame: tk.Frame, faction: str, data: MassacreMissionData.Facti
     """
     Draw one Data-Row for the Table
     """
-    reward_str = "{:.1f}".format(float(data.reward) / 1_000_000)
-    shareable_reward_str = "{:.1f}".format(float(data.shareable_reward) / 1_000_000)
+    for i, col_type in enumerate(settings.get_ordered_columns()):
+        align = col_type.get_alignment_body()
 
-    faction_label = tk.Label(frame, text=faction)
-    completed_mission_count_sum = int(data.all_mission_count) - int(data.completed_mission_count)
-    mission_num_label = tk.Label(frame, text=f"{completed_mission_count_sum}/{data.all_mission_count}") # Add the number of missions.
-    completed_kill_sum =int(data.killcount) - int(data.completed_kill_count)
-    kills_label = tk.Label(frame, text=f"{completed_kill_sum}/{data.killcount}") # Modify the kill count display
-    payout_label = tk.Label(frame, text=f"{reward_str} ({shareable_reward_str})")
+        match col_type:
+            case MassacreMissionData.ColumnType.FACTION:
+                text = faction
 
-    ui_elements = [faction_label, mission_num_label, kills_label, payout_label]
-    sticky_settings = [tk.W, tk.W, tk.W+tk.E , tk.W, tk.E] # Considering delta, define one more.
-    if settings.delta: 
-        # Calculate difference
-        delta = max_count - data.killcount
-        text = delta if delta > 0 else second_largest_count - max_count
-        delta_label = tk.Label(frame, text=str(text))
-        ui_elements.append(delta_label)
-        #delta_label.grid(row=row, column=4) # Next line of code processed.
+            case MassacreMissionData.ColumnType.MISSIONS_OPT:
+                if settings.display_partial_stacks:
+                    text = f"{data.missions.completed}/{data.missions.total}"
+                else:
+                    text = str(data.missions.total)
 
-    for i, element in enumerate(ui_elements):
-        element.grid(row=row, column=i, sticky=sticky_settings[i])
+            case MassacreMissionData.ColumnType.REWARD:
+                # helper to format millions
+                def fmt(x):
+                    return f"{float(x) / 1_000_000:.1f}"
+                total_r = fmt(data.reward.total)
+                total_shareable = fmt(data.shareable_reward.total)
+                completed_r = fmt(data.reward.completed)
+                completed_share = fmt(data.shareable_reward.completed)
 
-def __display_cmpsum(frame: tk.Frame, data: MassacreMissionData, _settings: GridUiSettings, row: int):
+                parts = []
+                if settings.display_partial_stacks:
+                    parts.append(f"{completed_r} ({completed_share})")
+                parts.append(f"{total_r} ({total_shareable})")
+                text = " / ".join(parts)
+
+            case MassacreMissionData.ColumnType.KILLS:
+                parts = []
+                if settings.display_partial_stacks:
+                    parts.append(str(data.kills.completed))
+                parts.append(str(data.kills.total))
+                text = "/".join(parts)
+
+            case MassacreMissionData.ColumnType.DELTA_OPT:
+                delta = max_count - data.kills.total
+                if delta > 0:
+                    text = str(delta)
+                else:
+                    text = str(second_largest_count - max_count)
+
+            case _:
+                text = "#MISSING COL DEF"
+        tk.Label(frame, text=text).grid(row=row, column=i, sticky=align)
+
+
+def __display_completed_sum(frame: tk.Frame, data: MassacreMissionData, _settings: GridUiSettings, row: int):
     """
     Add a row to display the total number of currently completed missions.
     """
-    label = tk.Label(frame, text=_("CompletedSum"))
+    label = tk.Label(frame, text=_("Completed Missions"))
     
     completed_num = tk.Label(frame, text=data.completed_mission_count) # Number of completed missions.
     kill_sum = tk.Label(frame, text=data.completed_kill_count) # Number of kills completed in missions.
@@ -266,21 +349,47 @@ def __display_cmpsum(frame: tk.Frame, data: MassacreMissionData, _settings: Grid
         entry.config(fg="YellowGreen")
         entry.grid(row=row, column=i, sticky=sticky_settings[i])
 
-def __display_sum(frame: tk.Frame, data: MassacreMissionData, _settings: GridUiSettings, row: int):
+def __display_sum(frame: tk.Frame, data: MassacreMissionData, settings: GridUiSettings, row: int):
     """
     Display the Sum-Row containing the Reward-Sum and the amount of Kills required.
     """
-    label = tk.Label(frame, text=_("AcceptedSum"))
-    all_missions_num = tk.Label(frame, text=data.mission_count)
-    kill_sum = tk.Label(frame, text=data.stack_height)
-    reward_sum_normal = "{:.1f}".format(float(data.reward) / 1_000_000)
-    reward_sum_wing = "{:.1f}".format(float(data.shareable_reward) / 1_000_000)
-    reward_sum = tk.Label(frame, text=f"{reward_sum_normal} ({reward_sum_wing})")
-    sticky_settings = [tk.W, tk.E, tk.E, tk.E]
-    for i, entry in enumerate([label, all_missions_num, kill_sum, reward_sum]):
-        entry.config(fg="green")
-        entry.grid(row=row, column=i, sticky=sticky_settings[i])
 
+    for i, col_type in enumerate(settings.get_ordered_columns()):
+        align = col_type.get_alignment_body()
+
+        match col_type:
+            case MassacreMissionData.ColumnType.FACTION:
+                text = _("Summary")
+
+            case MassacreMissionData.ColumnType.MISSIONS_OPT:
+                if settings.display_partial_stacks:
+                    text = f"{data.completed_mission_count}/{data.mission_count}"
+                else:
+                    text = str(data.mission_count)
+
+            case MassacreMissionData.ColumnType.REWARD:
+                # helper to format millions
+                def fmt(x):
+                    return f"{float(x) / 1_000_000:.1f}"
+                parts = []
+                if settings.display_partial_stacks:
+                    parts.append(f"{fmt(data.completed_reward)} ({fmt(data.completed_shareable_reward)})")
+                parts.append(f"{fmt(data.reward)} ({fmt(data.shareable_reward)})")
+                text = " / ".join(parts)
+
+            case MassacreMissionData.ColumnType.KILLS:
+                parts = []
+                if settings.display_partial_stacks:
+                    parts.append(str(data.completed_kill_count))
+                parts.append(str(data.stack_height))
+                text = "\\".join(parts)
+
+            case MassacreMissionData.ColumnType.DELTA_OPT:
+                text = ""
+
+            case _:
+                text = "#MISSING COL DEF"
+        tk.Label(frame, text=text, fg="green").grid(row=row, column=i, sticky=align)
 
 def __display_summary(frame: tk.Frame, data: MassacreMissionData, settings: GridUiSettings, row: int):
     ratio_text = "{:.2f}".format(float(data.target_sum)/float(data.stack_height))
@@ -309,18 +418,16 @@ def _display_data(frame: tk.Frame, data: MassacreMissionData, settings: GridUiSe
         row_pointer += 1
         # todo In the future, add a toggle button here to display detailed mission information under each faction.
 
-    if settings.sum:
-        __display_cmpsum(frame, data, settings, row_pointer)
-        row_pointer += 1
+    if settings.has_sum:
         __display_sum(frame, data, settings, row_pointer)
         row_pointer += 1
 
-    if settings.summary:
+    if settings.has_summary_row:
         __display_summary(frame, data, settings, row_pointer)
         row_pointer += 1
     full_width = __get_row_width(settings)
 
-    if settings.mission_count:
+    if settings.has_mission_count_row:
         __display_mission_count(frame, data, full_width, row_pointer)
         row_pointer += 1
 

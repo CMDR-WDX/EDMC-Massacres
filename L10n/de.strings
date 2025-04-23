@@ -1,0 +1,66 @@
+/* Language name */
+"!Language" = "Deutsch";
+
+"Multiple Target Factions" = "Mehrere Zielfraktionen";
+
+"Multiple Target Types" = "Mehrere Zieltypen";
+
+"Multiple Target Systems" = "Mehrere Zielsysteme";
+
+"Missing Active Mission Data" = "Es Fehlen Informationen zu aktiven Missionen";
+
+"If you are in game, go to main menu and come back" = "Falls du schon im Spiel bist, gehe ins Hauptmenü und komme danach wieder zurück";
+
+"Faction" = "Fraktion";
+
+"Reward (Wing)" = "Belohnung (Wing)";
+
+"Δmax" = "Δmax";
+
+"Ratio" = "Verhältnis";
+
+"Reward" = "Belohnung";
+
+"M CR/Kill." = "M CR/Abschuss";
+
+"Kills" = "Abschüsse";
+
+"Mission Count" = "Missionenanzahl";
+
+"Massacre Plugin is Outdated" = "Massacre-Plugin ist veraltet";
+
+"Go to Download" = "Zum Download gehen";
+
+"Dismiss" = "Ausblenden";
+
+"Massacre Plugin is ready." = "Massacre Plugin ist bereit.";
+
+"UI Settings" = "UI Einstellungen";
+
+"Display Delta-Column" = "Delta-Spalte anzeigen";
+
+"Display Sum-Row" = "Summenzeile anzeigen";
+
+"Display Summary-Row" = "Zusammenfassungszeile anzeigen";
+
+"Display Mission Count" = "Missionenanzahl anzeigen";
+
+"Other" = "Sonstiges";
+
+"Check for Updates on Start" = "Beim Start nach Aktualisierungen suchen";
+
+"Made by" = "Entwickelt von";
+
+"and contributors" = "und Mitwirkenden";
+
+"Open Releases on Github" = "Versionen auf Github öffnen";
+
+"Display kills/rewards for already completed completed missions" = "Zeige Abschüsse / Belohnungen für fertige Missionen an";
+
+"Display Mission Count Summary" = "Zeige Missionenanzahl-Zeile an";
+
+"Completed Missions" = "Fertige Missionen";
+
+"All Missions" = "Alle Missionen";
+
+"Missions" = "Missionen";
