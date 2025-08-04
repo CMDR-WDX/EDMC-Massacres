@@ -11,9 +11,15 @@ if hasattr(config, 'get_str'):
     file_location = config.get_str("journaldir")
 else:
     # noinspection SpellCheckingInspection
-    file_location = config.get("journaldir") #type: ignore
+    file_location = config.get("journaldir")  #type: ignore
 if file_location is None or file_location == "":
     file_location = config.default_journal_dir
+
+
+class MissionEventsLog:
+
+    def __init__(self) -> None:
+        self._cmdr = cmdr
 
 
 def __get_logs_after_timestamp(timestamp: dt.date) -> list[Path]:
@@ -28,30 +34,6 @@ def __get_logs_after_timestamp(timestamp: dt.date) -> list[Path]:
     return logs_after_timestamp
 
 
-def __extract_mission_accepted_events_from_log(file_path: Path) -> tuple[str, list[dict]]:
-    """
-    Return all Mission-Accepted events in this file, as well as the CMDR for this log.
-    If the log does not contain a CMDR, "" is returned
-    """
-    cmdr = ""
-    return_list = []
-
-    with open(file_path, "r", encoding="utf8") as current_log_file:
-        line = current_log_file.readline()
-        while line != "":
-            try:
-                line_as_json = json.loads(line)
-                if line_as_json["event"] == "Commander":
-                    cmdr = str(line_as_json["Name"])
-                if line_as_json["event"] == "MissionAccepted":
-                    return_list.append(line_as_json)
-            except Exception:
-                logger.warning(f"Failed to open File {file_path}. Skipping...")
-            finally:
-                line = current_log_file.readline()
-        return cmdr, return_list
-
-
 # noinspection SpellCheckingInspection
 def get_missions_for_all_cmdrs(timestamp: dt.date) -> dict[str, dict[int, dict]]:
     """
@@ -64,26 +46,48 @@ def get_missions_for_all_cmdrs(timestamp: dt.date) -> dict[str, dict[int, dict]]
     :return: Dictionary [CMDR Name, Dictionary[Mission ID, Mission Object]]
     """
 
-    # This contains MissionAccepted-events from all CMDRs
-    all_mission_logs_after_timestamp_for_all_cmdrs = \
-        map(__extract_mission_accepted_events_from_log, __get_logs_after_timestamp(timestamp))
+    current_name: str = ""
+    current_dict: dict[int, dict] = {}
+    return_map: dict[str, dict[int, dict]] = {}
 
-    return_list: dict[str, list[dict]] = {}
+    for path in __get_logs_after_timestamp(timestamp):
+        logger.debug(f"Opening file {path} ...")
 
-    # This contains the events in a normal list
-    for cmdr_from_event, events in all_mission_logs_after_timestamp_for_all_cmdrs:
-        if cmdr_from_event not in return_list.keys():
-            return_list[cmdr_from_event] = []
+        with open(path, "r", encoding="utf8") as current_log_file:
+            line = current_log_file.readline()
 
-        return_list[cmdr_from_event].extend(events)
+            while line != "":
+                try:
+                    line_as_json = json.loads(line)
 
-    # Now create a UUID -> Mission Lookup for each CMDR
-    return_array: dict[str, dict[int, dict]] = {}
+                    if line_as_json["event"] == "Commander":
+                        if current_name != "" and current_dict is not {}:
+                            return_map[current_name] = current_dict
 
-    for cmdr in return_list.keys():
-        return_array[cmdr] = {}
-        for event in return_list[cmdr]:
-            return_array[cmdr][event["MissionID"]] = event
+                        name = str(line_as_json["Name"])
 
+                        if current_name != name:
+                            current_name = name
+                            current_dict = {}
 
-    return return_array
+                    if current_name != "":
+                        if line_as_json["event"] == "MissionAccepted":
+                            current_dict[line_as_json["MissionID"]] = line_as_json
+                        elif line_as_json["event"] == "MissionRedirected":
+                            mission_id = line_as_json["MissionID"]
+                            """
+                            This section processes the MissionRedirected event in log files.
+                            For massacre missions, the format is consistent. Simply check if the MissionID exists in the original mission list to confirm completion.
+                            """
+                            if mission_id in current_dict:
+                                # missions completed
+                                current_dict[mission_id]["is_completed"] = True
+                except Exception:
+                    logger.warning("An error occurred, skipping line.")
+                finally:
+                    line = current_log_file.readline()
+
+    if current_name != "" and current_dict is not {}:
+        return_map[current_name] = current_dict
+
+    return return_map

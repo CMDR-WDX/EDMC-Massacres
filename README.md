@@ -1,15 +1,15 @@
-# ED Market Connector - Massacre Plugin
+中文说明[请点这里](./README_zh.md)
+# EDMC - Massacre Plugin
 This is a plugin for [Elite Dangerous Market Connector](https://github.com/EDCD/EDMarketConnector).
 
 Its purpose is to help you keep track of accepted Massacre-type missions in the game "Elite Dangerous".
 
-The plugin displays a table showing how many kills are required per Faction.  
+The plugin displays a table showing how many kills are required per Faction.
 If you are new to Massacre Stacking, you could take a look at [this article](https://sites.google.com/view/ed-pve-combat/making-money).
 
 <p align="center">
     <img src="./readme-src/example_screenshot.png" alt="An example screenshot"/>
     <br>
-    Screenshot of EDMC with the Plugin running.
 </p>
 
 ## Usage
@@ -17,8 +17,9 @@ If you are new to Massacre Stacking, you could take a look at [this article](htt
 Simply start EDMC and the Game. If you start EDMC after the game the plugin will ask you to go
 to main menu and back.
 
-From then on, start stacking missions :)  
-For each added or abandoned / completed missions the Table will update.
+From then on, start stacking missions :)<br>
+For each added or abandoned / completed missions the Table will update.<br>
+The status will also update each time the mission kill count is completed.
 
 ### How to read
 
@@ -30,13 +31,15 @@ Below you can see the main table's explanation:
 </p>
 
 1. These are the mission givers
-2. This is the sum of kills from all massacre missions handed out by that mission giver
-3. This is how much reward you will get upon completion, in Millions. The Value in brackets indicates how much of that is shareable with a wing.
-4. This is the Delta-Column. It displays the difference to the highest stack. The highest stack shows the difference to the second-highest stack and can be identified by the `-`
-5. The Sum-Row shows show many Kills you need to do in total, and how big the total reward is.
-6. More details showing the stack ratio (see below), rewards normalized per required kill, and the sum of all Mission-Kills.
+2. These are the faction's mission counts,  display Missions with `Remaining with uncompleted target kills. / Total number of missions for this faction`
+3. This is distributed by the mission issuer:  `REMaining kills required / total kills REQuired for this faction's all missions`
+4. This is how much reward you will get upon completion, in Millions. The Value in brackets indicates how much of that is shareable with a wing.
+5. This is the Delta-Column. It displays the difference to the highest stack. The highest stack shows the difference to the second-highest stack and can be identified by the `-`
+6. The CompletedSum-row displays your current progress: `Number of missions with kill targets completed / Total kills achieved / Reward for completed portions`
+7. The AcceptedSum-Row shows show many Kills you need to do in total, and how big the total reward is.
+8. More details showing the stack ratio (see below), rewards normalized per required kill, and the sum of all Mission-Kills.
 
-**Stack-Ratio**: This figure tells you how effective you stack is. It is calculated as follows:  
+**Stack-Ratio**: This figure tells you how effective you stack is. It is calculated as follows:<br>
 `stack_ratio = all_mission_kills / required_kills`. It is a value >= 1. The higher, the better.
 A Stack-ratio of 1 for example would be just taking missions from one faction. In the example above the stack ratio is `1.83 = sum([45, 54]) / max([45, 54])`.
 
@@ -52,11 +55,16 @@ and collect all Mission-Events.
 
 Also, when doing an Update-Check the `version`-File is read.
 
-
 ## Integrations
-This plugin features integrations. You can think of them as Plugins for this Plugin.
+This plugin features integrations. You can think of them as Plugins for this Plugin.<br>
 Pull Requests are welcome for new integrations. Create an Issue if you have any questions :)
 
 ### edmcoverlay (Linux)
 This integration adds the option to send data to the Linux Implementation of edmcoverlay. When you pick up new missions you will get the current stack as an overlay.
-Thank you [@pan-mroku](https://github.com/pan-mroku) for the Pull Request.
+Thank you [@pan-mroku](https://github.com/pan-mroku) for the Pull Request.<br>
+
+
+## Acknowledgments
+[ckx000](https://github.com/ckx000/EDMC-Massacres)<br>
+[AlphaConqueror](https://github.com/AlphaConqueror/EDMC-Massacres)<br>
+[CMDR-WDX](https://github.com/CMDR-WDX/EDMC-Massacres)
