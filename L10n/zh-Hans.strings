@@ -13,17 +13,9 @@
 
 "Faction" = "任务派系";
 
-"R/T" = "R/T";
-
-"KRM/REQ" = "余/总需";
-
 "Reward (Wing)" = "奖励(可共享)";
 
 "Δmax" = "Δ差值";
-
-"CompletedSum" = "已完成合计";
-
-"AcceptedSum" = "已接任务合计";
 
 "Ratio" = "效率";
 
@@ -56,3 +48,19 @@
 "Other" = "其他";
 
 "Check for Updates on Start" = "启动时检查更新";
+
+"Made by" = "编写于";
+
+"and contributors" = "及贡献者";
+
+"Open Releases on Github" = "在Github上打开发布页面";
+
+"Display kills/rewards for already completed completed missions" = "显示已完成任务的击杀/奖励";
+
+"Display Mission Count Summary" = "显示任务计数摘要";
+
+"Completed Missions" = "已完成任务";
+
+"All Missions" = "所有任务";
+
+"Missions" = "任务数";
